@@ -1,0 +1,459 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Go Backend Roadmap</title><style>:root{--bg:#0d1117;--p:#161b22;--b:#2a3342;--t:#e6edf3;--m:#8b949e;--a:#2f81f7;--g:#3fb950;--o:#d29922;--pu:#bc8cff;--r:#f85149}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:15px/1.6 system-ui,Segoe UI,Roboto,Arial}a{color:#58a6ff}.w{max-width:1060px;margin:0 auto;padding:20px 14px 80px}header{position:sticky;top:0;z-index:9;background:rgba(13,17,23,.96);border-bottom:1px solid var(--b);padding:12px 0}.hi{max-width:1060px;margin:0 auto;padding:0 14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}.pct{font-size:26px;font-weight:800}.bar{height:10px;background:#21262d;border-radius:99px;overflow:hidden;border:1px solid var(--b);min-width:200px;flex:1}.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--a),var(--g))}.btn{background:#1c2330;border:1px solid var(--b);color:var(--t);border-radius:8px;padding:7px 11px;cursor:pointer;font-size:13px}.tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--b)}.sq{background:rgba(47,129,247,.15);border-color:var(--a);color:#79b8ff}.pa{background:rgba(63,185,80,.13);border-color:var(--g);color:#7ee787}.st{background:var(--p);border:1px solid var(--b);border-radius:14px;margin:20px 0;overflow:hidden}.sh{padding:14px 16px;border-bottom:1px solid var(--b);background:#1a2230}.sh h2{margin:0 0 2px;font-size:18px}.sh p{margin:0;color:var(--m);font-size:13px}.nd{padding:6px 16px 16px}.n{border:1px solid var(--b);border-radius:12px;margin:13px 0 13px 24px;background:#0f141c;position:relative}.n:before{content:"";position:absolute;left:-24px;top:27px;width:24px;height:2px;background:var(--b)}.n:after{content:"";position:absolute;left:-24px;top:-14px;bottom:50%;width:2px;background:var(--b)}.nd>.n:first-child:after{display:none}.d{position:absolute;left:-30px;top:21px;width:13px;height:13px;border-radius:50%;background:var(--bg);border:3px solid var(--a)}.n.pa .d{border-color:var(--g)}.nh{padding:12px;cursor:pointer;display:flex;gap:8px;align-items:flex-start}.nh:hover{background:#131a25}.nt{font-weight:700}.nde{color:var(--m);font-size:13px;margin-top:3px}.np{margin-left:auto;white-space:nowrap;font-size:11px;color:var(--m);background:#21262d;border:1px solid var(--b);border-radius:99px;padding:3px 9px;flex-shrink:0}.np.dn{color:#7ee787;border-color:var(--g)}.nb{display:none;border-top:1px solid var(--b);padding:5px 12px 12px}.n.op .nb{display:block}.s{border:1px solid var(--b);border-radius:10px;padding:9px 11px;margin:9px 0;background:#11161f}.s.dn{border-color:rgba(63,185,80,.55)}.st2{display:flex;gap:9px}.st2 input{width:18px;height:18px;margin-top:3px;accent-color:var(--g);cursor:pointer;flex-shrink:0}.tk{background:rgba(210,153,34,.09);border:1px solid rgba(210,153,34,.4);border-radius:8px;padding:6px 9px;font-size:13px;margin:6px 0}.mt{font-size:12px;color:var(--m)}.mi{margin:14px 0 5px 24px;border:1px solid rgba(188,140,255,.5);background:rgba(188,140,255,.08);border-radius:12px;padding:11px 13px;position:relative}.mi:before{content:"";position:absolute;left:-25px;top:22px;width:24px;height:2px;background:var(--pu)}.mi h3{margin:0 0 4px;color:var(--pu);font-size:13px;text-transform:uppercase}.mi ul{margin:4px 0 2px 18px;font-size:13.5px;padding:0}.nta{width:100%;min-height:56px;background:#0d1117;color:var(--t);border:1px solid var(--b);border-radius:8px;padding:7px 9px;font:13px/1.5 inherit;margin-top:6px;resize:vertical}.stt{width:22px;height:22px;border-radius:50%;border:2px solid var(--m);background:transparent;cursor:pointer;flex-shrink:0;margin-top:2px;padding:0}.stt.todo{border-color:#8b949e;background:#21262d}.stt.learning{border-color:var(--o);background:var(--o);box-shadow:0 0 8px rgba(210,153,34,.6)}.stt.done{border-color:var(--g);background:var(--g)}.sbt{font-size:12px;color:var(--m);background:transparent;border:1px dashed var(--b);border-radius:6px;padding:2px 8px;cursor:pointer;margin-top:6px}.sbt.has{color:#79b8ff;border-color:var(--a)}.sSb{height:5px;background:#21262d;border-radius:99px;overflow:hidden;margin-top:8px;border:1px solid var(--b)}.sSb>i{display:block;height:100%;background:linear-gradient(90deg,var(--a),var(--g))}.sSt{font-size:12px;color:var(--m);margin-top:4px}.x2{font-size:12px;color:var(--m);margin-top:4px}.nw{background:#161d28;border:1px solid var(--b);border-radius:10px;padding:9px 12px;margin-top:10px;font-size:13px}.nw b{color:#79b8ff}.fc{background:#161d28;border:1px solid var(--b);border-radius:10px;padding:9px 12px;margin-top:10px;font-size:13px}.fc input{width:64px;background:#0d1117;color:var(--t);border:1px solid var(--b);border-radius:6px;padding:4px 7px;font-size:13px}.io{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.vtabs{display:inline-flex;border:1px solid var(--b);border-radius:8px;overflow:hidden}
+.vtabs button{background:#1c2330;border:0;color:var(--t);padding:7px 12px;cursor:pointer;font-size:13px}
+.vtabs button.on{background:var(--a);color:#fff}
+#gwrap{display:none;position:relative;border:1px solid var(--b);border-radius:14px;overflow:hidden;background:#0a0e14;margin:16px 0 8px}
+body.gmode #gwrap{display:block}
+body.gmode #app,body.gmode #e1,body.gmode #e0{display:none!important}
+#gcv{display:block;width:100%;height:62vh;min-height:440px;cursor:grab;touch-action:none}
+#gbar{position:absolute;left:10px;top:10px;display:flex;gap:8px;flex-wrap:wrap;z-index:3}
+#ghint{position:absolute;left:10px;bottom:8px;color:var(--m);font-size:12px;z-index:3;background:rgba(10,14,20,.72);padding:3px 8px;border-radius:8px;border:1px solid var(--b)}
+#gside{position:absolute;right:0;top:0;bottom:0;width:330px;max-width:88vw;background:rgba(15,20,28,.97);border-left:1px solid var(--b);padding:14px;overflow:auto;transform:translateX(105%);transition:transform .22s ease;z-index:4}
+#gside.on{transform:none}
+#gside h3{margin:0 0 6px;font-size:16px}
+#gside .mut{color:var(--m);font-size:13px}
+#gside .row{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap}
+#gstat{display:flex;gap:6px}
+#gstat button{flex:1}
+#gstat button.on{outline:2px solid var(--a)}
+#gside textarea{width:100%;min-height:76px;background:#0d1117;color:var(--t);border:1px solid var(--b);border-radius:8px;padding:8px}
+@keyframes gpulse{0%{box-shadow:0 0 0 0 rgba(47,129,247,.55)}70%{box-shadow:0 0 0 12px rgba(47,129,247,0)}100%{box-shadow:0 0 0 0 rgba(47,129,247,0)}}
+.vtabs{display:inline-flex;border:1px solid var(--b);border-radius:8px;overflow:hidden;margin-left:6px}
+.vtabs button{background:#1c2330;border:0;color:var(--t);padding:7px 12px;cursor:pointer;font-size:13px}
+.vtabs button.on{background:var(--a);color:#fff}
+#gwrap{display:none;position:relative;border:1px solid var(--b);border-radius:14px;overflow:hidden;background:#0a0e14;margin:16px 0 8px}
+body.gmode #gwrap{display:block}
+body.gmode #app,body.gmode #e1,body.gmode #e0{display:none!important}
+#gcv{display:block;width:100%;height:62vh;min-height:440px;cursor:grab;touch-action:none}
+#gbar{position:absolute;left:10px;top:10px;display:flex;gap:8px;flex-wrap:wrap;z-index:3}
+#ghint{position:absolute;left:10px;bottom:8px;color:var(--m);font-size:12px;z-index:3;background:rgba(10,14,20,.72);padding:3px 8px;border-radius:8px;border:1px solid var(--b)}
+#gside{position:absolute;right:0;top:0;bottom:0;width:330px;max-width:88vw;background:rgba(15,20,28,.97);border-left:1px solid var(--b);padding:14px;overflow:auto;transform:translateX(105%);transition:transform .22s ease;z-index:4}
+#gside.on{transform:none}
+#gside h3{margin:0 0 6px;font-size:16px}
+#gside .mut{color:var(--m);font-size:13px}
+#gside .row{display:flex;gap:8px;margin:10px 0}
+#gstat{display:flex;gap:6px;width:100%}
+#gstat button{flex:1}
+#gstat button.on{outline:2px solid var(--a)}
+#gside textarea{width:100%;min-height:76px;background:#0d1117;color:var(--t);border:1px solid var(--b);border-radius:8px;padding:8px}
+</style></head><body>
+<header><div class="hi"><div><div style="font-size:11px;color:var(--m)">GO BACKEND ROADMAP</div><div class="pct"><span id="p">0</span>% <span id="c" style="font-size:12px;color:var(--m);font-weight:400"></span></div></div><div class="bar"><i id="b"></i></div><button class="btn" id="e1">Развернуть все</button><span class="vtabs"><button class="btn on" id="vL">List</button><button class="btn" id="vG">Graph</button></span><button class="btn" id="e0">Свернуть</button><span class="vtabs"><button class="btn on" id="vL">☰ Список</button><button class="btn" id="vG">🕸 Граф</button></span><button class="btn" id="dl">Скачать прогресс</button><button class="btn" id="ul">Загрузить прогресс</button><input type="file" id="fi" accept=".json,application/json" style="display:none"><button class="btn" id="rs" style="color:var(--r)">Сбросить</button></div><div class="hi"><div class="nw" id="nw" style="flex:1">Сейчас изучаю: —</div><div class="nw" id="sk" style="flex:1">Активность: —</div><div class="fc">Темп: <input id="pw" type="number" min="1" max="80" value="8"> ч/нед <span id="fc">—</span></div></div></header>
+<div class="w"><h1>Go Backend: карта до вакансии</h1><p style="color:var(--m);font-size:14px">Старт: учишь синтаксис Go. Всего примерно 300-380 ч + pet-проекты. <span class="tag sq">строго по порядку</span> <span class="tag pa">можно параллельно</span> — кликай по узлам, отмечай чекбоксы (все в localStorage).</p><div id="app"></div>
+<div id="gwrap"><canvas id="gcv"></canvas><div id="gbar"><button class="btn" id="gfit">Fit</button><button class="btn" id="gcur">To current</button><button class="btn" id="gstop">Pause</button></div><div id="ghint">drag node=pin, drag bg=pan, wheel=zoom, click=details</div><aside id="gside"></aside></div>
+<div id="gwrap"><canvas id="gcv"></canvas>
+<div id="gbar"><button class="btn" id="gfit">⤢ Вписать</button><button class="btn" id="gcur">🎯 к текущей теме</button><button class="btn" id="gstop">⏸ Пауза</button></div>
+<div id="ghint">drag узла — приколоть · drag фона — pan · колесо — zoom · клик — детали</div>
+<aside id="gside"></aside></div>
+<p style="color:var(--m);font-size:13px">Ссылки — только проверенные официальные. Где единой официальной доки нет — текстовая подсказка, что искать.</p></div>
+<script>const K="go-roadmap-v1",KD="go-roadmap-days",KN="go-roadmap-notes",KP="go-roadmap-pace";
+let S={};try{S=JSON.parse(localStorage.getItem(K)||"{}")}catch(e){S={}}
+// миграция старого формата {ключ:1} -> {ключ:"done"}
+for(const k in S){if(S[k]===1||S[k]===true)S[k]="done"}
+let DY=[];try{DY=JSON.parse(localStorage.getItem(KD)||"[]")}catch(e){DY=[]}
+let NT={};try{NT=JSON.parse(localStorage.getItem(KN)||"{}")}catch(e){NT={}}
+let PW=parseInt(localStorage.getItem(KP)||"8",10);if(!(PW>0))PW=8;
+let OPEN={};try{OPEN=JSON.parse(localStorage.getItem("go-roadmap-open")||"{}")}catch(e){OPEN={}}
+const sv=()=>localStorage.setItem(K,JSON.stringify(S));
+const svD=()=>localStorage.setItem(KD,JSON.stringify(DY));
+const svN=()=>localStorage.setItem(KN,JSON.stringify(NT));
+const svP=()=>localStorage.setItem(KP,String(PW));const svO=()=>localStorage.setItem("go-roadmap-open",JSON.stringify(OPEN));
+const st=k=>(S[k]==="done"||S[k]==="learning"||S[k]==="todo")?S[k]:(S[k]?"done":"todo");
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+function markDay(){const t=today();if(!DY.includes(t)){DY.push(t);DY.sort();svD()}}
+
+const D=[
+{s:"1. Фундамент Go",d:"Без уверенного Go остальное шатается. Внутри блока идти строго по порядку.",n:[
+{id:"go-syn",t:"Уверенный синтаксис Go",m:"seq",ds:"База всего трека: типы, функции, структуры, интерфейсы, ошибки.",docs:["https://go.dev/tour/list","https://go.dev/doc/tutorial/"],sub:[
+{w:"Типы, переменные, управление",y:"Фундамент чтения любого кода.",t:"Задание: CLI-калькулятор с флагом операции.",h:6,l:["https://go.dev/tour/list"],x:"Go by Example: переменные, if-else, switch, for"},
+{w:"Функции, методы, указатели",y:"Важно value vs pointer receiver.",t:"Задание: тип Cart с методами Add и Total на указателе.",h:6,l:["https://go.dev/doc/effective_go"],x:"Go by Example: методы, указатели, структуры"},
+{w:"Struct, interface, композиция",y:"В Go нет наследования — есть интерфейсы.",t:"Задание: интерфейс Notifier + 2 реализации.",h:8,l:["https://go.dev/doc/effective_go"],x:"Go Code Review Comments: интерфейсы и встраивание"},
+{w:"Slices, maps, строки",y:"len и cap, nil-мапы, руны.",t:"Задание: word-count через map + сортировка.",h:6,l:["https://go.dev/tour/list"],x:"Go by Example: срезы, карты, строки и руны"},
+{w:"Ошибки: wrap, Is и As",y:"Ошибки — значения; wrap через процент-w.",t:"Задание: цепочка из 3 функций с оборачиванием ошибок.",h:5,l:["https://go.dev/blog/error-handling-and-go"]}],x:"Go blog: Error inspection — Is, As, unwrap (офиц. блог)"},
+{id:"gomod",t:"Модули: go mod",m:"seq",ds:"Сборка и зависимости: init, tidy, версии.",docs:["https://go.dev/doc/tutorial/create-module"],sub:[
+{w:"init, build, run",y:"Чтобы проект собирался одной командой.",t:"Задание: модуль, 2 пакета, сборка всего проекта.",h:3,l:["https://go.dev/doc/tutorial/create-module"],x:"Go docs: Tutorial Create a Module (офиц. дока)"},
+{w:"get и tidy",y:"Чистое дерево зависимостей.",t:"Задание: подключи uuid, выполни tidy.",h:3,l:["https://go.dev/doc/modules/gomod-ref"],x:"Go blog: Using Go Modules (офиц. блог)"},
+{w:"Версии и replace",y:"Semver и локальная замена.",t:"Задание: подключи пакет через replace.",h:3,l:["https://go.dev/doc/modules/gomod-ref"]}],x:"Go docs: Minimal Version Selection + replace"},
+{id:"std",t:"Стандартная библиотека",m:"seq",ds:"HTTP, JSON, контекст, тесты — все на stdlib.",docs:["https://go.dev/pkg/"],sub:[
+{w:"net-http сервер",y:"Даже с Gin внутри — net-http.",t:"Задание: сервер с health и echo + таймауты.",h:6,l:["https://pkg.go.dev/net/http"],x:"Go by Example: HTTP-серверы, таймауты, graceful shutdown"},
+{w:"encoding-json",y:"REST — это JSON туда-сюда.",t:"Задание: CRUD в памяти с корректными статусами.",h:4,l:["https://pkg.go.dev/encoding/json"],x:"Go by Example: JSON — Marshal, Unmarshal, теги"},
+{w:"context",y:"Отмена и таймауты для HTTP, SQL и gRPC.",t:"Задание: хендлер с WithTimeout.",h:4,l:["https://pkg.go.dev/context"],x:"Go blog: Concurrency Patterns — Context (офиц. блог Go)"},
+{w:"testing table-driven",y:"Идиома Go.",t:"Задание: покрой функцию 5 кейсами.",h:5,l:["https://pkg.go.dev/testing"]}]}],
+mi:{t:"Milestone 1 — Go-база",c:["CLI и HTTP на stdlib без подсказок","Объясняешь interface и wrap ошибок","Модуль собирается, тесты зеленые"]},x:"Go by Example: тестирование table-driven"},
+{s:"2. Сети, REST и concurrency",d:"После Go-базы. Concurrency — строго после синтаксиса; сети и REST — параллельно с ним.",n:[
+{id:"net",t:"Сети: HTTP, TCP-IP, уровни",m:"par",ds:"Как запрос идет по сети: TCP, HTTP, TLS, DNS. Нужно для отладки API и понимания gRPC.",hint:"Единой официальной доки нет — искать: RFC 9110 (HTTP), MDN HTTP, TCP-IP Illustrated",sub:[
+{w:"Модель OSI, TCP-IP и сокеты",y:"Где TCP, где HTTP, что такое порт.",t:"Задание: нарисуй схему путь запроса браузер-сервер и выведи ss -tlnp на своей машине.",h:4,hint:"искать в MDN: HTTP overview"},
+{w:"HTTP: методы, статусы, заголовки",y:"REST построен на семантике HTTP.",t:"Задание: curl GET, POST, PUT, DELETE; объясни 2xx, 4xx, 5xx.",h:5,hint:"искать: MDN HTTP methods и status + RFC 9110"},
+{w:"TCP vs UDP, TLS, DNS",y:"Почему API на TCP+TLS; как резолвится хост.",t:"Задание: выполни curl -v https://go.dev, выпиши 3 строки handshake TLS и результат nslookup go.dev.",h:5,hint:"искать: Cloudflare Learning Center (DNS, TLS)"}]},
+{id:"rest",t:"REST API (база)",m:"par",ds:"Ресурсы, JSON, статусы, идемпотентность. Главный интерфейс backend-приложений.",hint:"Спец. официальной REST-доки нет — искать: REST API Tutorial, RFC 9110",sub:[
+{w:"Ресурсы и маршруты",y:"Проектирование users-id вместо getUser.",t:"Задание: опиши таблицу 5 endpoints CRUD users и orders: метод + путь + статус.",h:4,hint:"искать: REST API Tutorial (restapitutorial.com)",x:"REST API Tutorial: ресурсы и именование"},
+{w:"JSON, статусы, ошибки",y:"Единый формат ошибок решает боль фронта.",t:"Задание: CRUD на stdlib с единым JSON ошибок.",h:6,l:["https://pkg.go.dev/encoding/json"],x:"JSON API: формат ошибок + статусы"},
+{w:"Query, пагинация, фильтры",y:"Без limit и offset API ляжет на больших таблицах.",t:"Задание: items с page, limit и sort.",h:4,hint:"искать: JSON API pagination"}],x:"JSON API: пагинация limit-offset"},
+{id:"conc",t:"Concurrency: goroutines, channels",m:"seq",ds:"Главное преимущество Go: горутины, каналы, select, sync. Ошибки тут = гонки.",docs:["https://go.dev/tour/concurrency/1","https://go.dev/doc/effective_go"],sub:[
+{w:"Goroutines + WaitGroup",y:"Параллельные задачи без потоков ОС.",t:"Задание: скачать 5 URL параллельно через WaitGroup.",h:6,l:["https://go.dev/tour/concurrency/1"],x:"Go blog: Share Memory By Communicating (офиц. блог Go)"},
+{w:"Channels + select",y:"Обмен данными и таймауты.",t:"Задание: worker pool на 3 воркера + select с timeout.",h:8,l:["https://go.dev/tour/concurrency/2"],x:"Go by Example: каналы, select, таймауты, worker pools"},
+{w:"Mutex, race, errgroup",y:"Защита общих данных; поиск гонок.",t:"Задание: счетчик с mutex + запуск с флагом race.",h:6,l:["https://go.dev/doc/effective_go"]}]}],
+mi:{t:"Milestone 2 — HTTP + concurrency",c:["REST CRUD с пагинацией и ошибками","Worker pool без гонок (race чист)","Объясняешь TCP-HTTP-JSON путь запроса"]},x:"Go docs: Data Race Detector + errgroup README"},
+{s:"3. PostgreSQL + SQL",d:"Можно параллельно с блоком 2. Внутри — строго по порядку.",n:[
+{id:"pg",t:"PostgreSQL: устройство и основы",m:"seq",ds:"Главная БД вакансии: таблицы, типы, ключи, миграции.",docs:["https://www.postgresql.org/docs/current/index.html","https://www.postgresql.org/docs/current/tutorial.html"],sub:[
+{w:"Установка, psql, типы",y:"Уметь поднять БД и ходить в нее руками.",t:"Задание: подними Postgres в docker, создай БД и users.",h:4,l:["https://www.postgresql.org/docs/current/tutorial-start.html"],x:"PostgreSQL Tutorial: установка и psql"},
+{w:"Схема: PK, FK, NOT NULL, unique",y:"Целостность на уровне БД, а не только в коде.",t:"Задание: users-orders с FK и ON DELETE RESTRICT.",h:5,l:["https://www.postgresql.org/docs/current/tutorial-constraints.html"],x:"PostgreSQL Tutorial: ограничения и ключи"},
+{w:"Индексы и миграции",y:"Индексы ускоряют, миграции версионируют схему.",t:"Задание: btree-индекс на email + 3 миграции.",h:5,l:["https://www.postgresql.org/docs/current/indexes.html"]}],x:"golang-migrate README: миграции up-down"},
+{id:"sql",t:"SQL: SELECT, JOIN, транзакции",m:"seq",ds:"Ядро требования: запросы, JOIN, транзакции, оптимизация.",docs:["https://www.postgresql.org/docs/current/tutorial-select.html","https://www.postgresql.org/docs/current/tutorial-transactions.html"],sub:[
+{w:"SELECT, WHERE, GROUP BY",y:"80 процентов рабочих запросов.",t:"Задание: топ-5 товаров по выручке (SUM+GROUP+LIMIT).",h:6,l:["https://www.postgresql.org/docs/current/tutorial-select.html"],x:"PostgreSQL Tutorial: SELECT, агрегаты, GROUP BY"},
+{w:"JOIN inner и left, подзапросы",y:"Связанные таблицы без N+1 в коде.",t:"Задание: пользователи + заказы через LEFT JOIN.",h:6,l:["https://www.postgresql.org/docs/current/tutorial-join.html"],x:"PostgreSQL Tutorial: JOIN и подзапросы"},
+{w:"INSERT, UPDATE, DELETE + транзакции",y:"Атомарность: списание + запись вместе.",t:"Задание: перевод баланса BEGIN-COMMIT + ROLLBACK.",h:6,l:["https://www.postgresql.org/docs/current/tutorial-transactions.html"],x:"PostgreSQL Tutorial: транзакции и уровни изоляции"},
+{w:"EXPLAIN и оптимизация",y:"Видеть seq scan и чинить индексом.",t:"Задание: EXPLAIN ANALYZE, добавь индекс, сравни.",h:6,l:["https://www.postgresql.org/docs/current/using-explain.html"]}],x:"PostgreSQL Tutorial: Using EXPLAIN + индексы"},
+{id:"godb",t:"Go + SQL: database-sql",m:"seq",ds:"Мост Go-Postgres: пул, Query и Exec, транзакции из кода.",docs:["https://go.dev/doc/database/database-sql","https://pkg.go.dev/database/sql"],sub:[
+{w:"Подключение и пул (pgx)",y:"Пул решает скорость и лимиты коннектов.",t:"Задание: подключи pgx с MaxConns=5, выполни Ping и SELECT version().",h:4,l:["https://pkg.go.dev/github.com/jackc/pgx/v5"],x:"pgx README + Go database-sql docs: пул соединений"},
+{w:"Query, Exec, Scan",y:"Чтение строк и запись без магии.",t:"Задание: CRUD users на database-sql или pgx.",h:6,l:["https://go.dev/doc/database/database-sql"],x:"Go wiki: database-sql tutorial (офиц. wiki)"},
+{w:"Транзакции из Go + sqlc",y:"Транзакция в коде + генерация типов.",t:"Задание: перевод баланса 100 единиц между двумя счетами в tx + сгенерируй типы через sqlc.",h:6,hint:"искать в официальной документации: sqlc docs (sqlc.dev) и pgx docs"}]}],
+mi:{t:"Milestone 3 — данные",c:["Схема users-orders с FK и индексами","JOIN + транзакция + EXPLAIN без подсказок","CRUD из Go через пул в транзакции"]}},
+{s:"4. Redis, Docker, Gin-Echo",d:"Все три — параллельно между собой после блоков 1-2. Gin — после REST.",n:[
+{id:"redis",t:"Redis: база",m:"par",ds:"Кэш и сессии: строки, TTL, инвалидация. Снимает нагрузку с Postgres.",docs:["https://redis.io/docs/latest/","https://redis.io/docs/latest/commands/"],sub:[
+{w:"Строки, хеши, TTL",y:"Кэш GET-запросов — главный кейс.",t:"Задание: SET, GET, HSET + EXPIRE через redis-cli.",h:3,l:["https://redis.io/docs/latest/commands/"],x:"Redis Tutorial: структуры данных и expire"},
+{w:"Кэширование в Go",y:"Cache-aside: сначала Redis, потом БД.",t:"Задание: кэшируй профиль на 60с (go-redis).",h:5,l:["https://redis.io/docs/latest/develop/clients/go/"],x:"go-redis README: cache-aside пример"},
+{w:"Инвалидация и сессии",y:"Протухший кэш хуже его отсутствия.",t:"Задание: инвалидация при UPDATE + сессии с TTL.",h:4,l:["https://redis.io/docs/latest/"]}],x:"Redis Tutorial: key expiration + сессии"},
+{id:"docker",t:"Docker: база",m:"par",ds:"Postgres, Redis и API — все едет в контейнерах.",docs:["https://docs.docker.com/get-started/","https://docs.docker.com/compose/"],sub:[
+{w:"Образ, контейнер, том",y:"Изолированное окружение одной командой.",t:"Задание: запусти postgres 16 и redis 7 с томами.",h:4,l:["https://docs.docker.com/get-started/"],x:"Docker Get Started: образы, контейнеры, тома"},
+{w:"Dockerfile для Go",y:"Multistage-сборка дает маленький образ.",t:"Задание: multistage Dockerfile для API.",h:4,l:["https://docs.docker.com/language/golang/"],x:"Docker docs: multi-stage builds для Go"},
+{w:"Compose api+db+redis",y:"Все окружение одной командой.",t:"Задание: compose из 3 сервисов + healthcheck.",h:4,l:["https://docs.docker.com/compose/"]}],x:"Docker Compose: networking + healthcheck"},
+{id:"gin",t:"Gin или Echo",m:"seq",ds:"Фреймворк для REST: роуты, валидация, middleware. Выбери один.",hint:"Официальная дока — на выбор: Gin Web Framework docs или Echo docs (echo.labstack.com)",sub:[
+{w:"Роуты, параметры, JSON",y:"Скелет любого API.",t:"Задание: CRUD users на Gin или Echo.",h:5,hint:"искать в официальной документации: Gin Quick Start или Echo Guide"},
+{w:"Middleware: лог, auth, CORS",y:"Сквозная логика без дублей.",t:"Задание: middleware лога + проверка токена.",h:4,hint:"искать в официальной документации: Gin Middleware или Echo Middleware"},
+{w:"Валидация и ошибки",y:"Чистый вход — меньше 500-х.",t:"Задание: required-поля + единый JSON ошибок.",h:4,hint:"искать в официальной документации: Gin Model binding или Echo Request"},
+{w:"Слой handler-service-repo",y:"Архитектура, которую ждут на ревью.",t:"Задание: разнеси CRUD на 3 слоя + pgx.",h:8,hint:"искать: Go project layout, clean architecture Go"}]}],
+mi:{t:"Milestone 4 — сервис",c:["API на Gin или Echo в 3 слоя + Postgres","Горячие чтения через Redis с инвалидацией","Все поднимается через compose одной командой"]}},
+{s:"5. Дизайн: SOLID, ООП, паттерны, алгоритмы",d:"Можно параллельно с блоками 3-4. Теория закрепляется на твоем API.",n:[
+{id:"solid",t:"SOLID и ООП в Go",m:"par",ds:"Простые модули: SRP, DI через интерфейсы, композиция.",hint:"Единой официальной доки нет — искать: SOLID Principles, Go Code Review Comments",sub:[
+{w:"SRP, OCP, DIP",y:"Маленькие интерфейсы и внедрение зависимостей.",t:"Задание: выдели UserRepo интерфейсом, внедри mock.",h:5,hint:"искать: SOLID в примерах Go"},
+{w:"Композиция вместо наследования",y:"Идиома Go вместо иерархий.",t:"Задание: переписать иерархию на встраивание.",h:4,l:["https://go.dev/doc/effective_go"]},
+{w:"Чистые функции и пакеты",y:"Пакет = ответственность; exported-минимум.",t:"Задание: разбей main на internal пакеты.",h:4,hint:"искать: Go project layout"}]},
+{id:"pat",t:"Паттерны: базовые и расширенные",m:"par",ds:"Repository, Middleware, Options, Worker Pool, Circuit Breaker.",hint:"Официальной доки нет — искать: Refactoring.Guru, Go Patterns",sub:[
+{w:"Repository + Options",y:"Доступ к данным и гибкие конструкторы.",t:"Задание: Postgres UserRepo + функциональные опции.",h:5,hint:"искать: Refactoring.Guru + Go functional options"},
+{w:"Middleware и Decorator",y:"Логи, метрики, ретраи поверх хендлеров.",t:"Задание: цепочка middleware для HTTP.",h:4,hint:"искать: Go middleware pattern"},
+{w:"Worker Pool, Fan-in и Fan-out, Breaker",y:"Конкурентные паттерны продакшена.",t:"Задание: fan-out + простой breaker.",h:6,l:["https://go.dev/tour/concurrency/2"]}]},
+{id:"algo",t:"Базовые алгоритмы",m:"par",ds:"Сложность, сортировки, хеш-таблицы, два указателя, графы. Нужно для собесов.",hint:"Официальной доки нет — искать: Big-O Cheatsheet, LeetCode Easy, Visualgo",sub:[
+{w:"Big-O и сортировки",y:"Понимать цену кода на собеседовании.",t:"Задание: сравни вставку, сортировку и поиск, замерь.",h:5,hint:"искать: Big-O cheat sheet"},
+{w:"Хеш-таблицы, стек, очередь",y:"Чаще спрашивают map + два указателя.",t:"Задание: 10 задач Easy на map и два указателя.",h:8,hint:"искать: LeetCode Easy + NeetCode"},
+{w:"Бинарный поиск, BFS и DFS",y:"База для задач на графы и деревья.",t:"Задание: бинарный поиск + BFS по графу.",h:6,hint:"искать: Visualgo"}]}],
+mi:{t:"Milestone 5 — зрелость",c:["Код по слоям, зависимости через интерфейсы","Называешь 3+ паттерна и где они у тебя","Решаешь Easy и оцениваешь сложность"]}},
+{s:"6. Финиш: gRPC + pet-проекты",d:"Строго в конце: нужен весь фундамент (Go, сети, SQL, Docker).",n:[
+{id:"grpc",t:"gRPC",m:"seq",ds:"Контрактные RPC на protobuf + HTTP-2: строже REST для сервис-сервис.",docs:["https://grpc.io/docs/languages/go/","https://protobuf.dev/programming-guides/proto3/"],sub:[
+{w:"Protobuf: сообщения и сервис",y:"Контракт вместо рыхлого JSON.",t:"Задание: proto для Users (Get, Create, List).",h:4,l:["https://protobuf.dev/programming-guides/proto3/"],x:"gRPC Basics tutorial: proto-файл users-сервиса"},
+{w:"Unary RPC на Go",y:"Скелет любого gRPC-сервиса.",t:"Задание: сервер + клиент на localhost.",h:6,l:["https://grpc.io/docs/languages/go/basics/"],x:"gRPC Basics tutorial: unary на Go"},
+{w:"Стриминг + deadline",y:"Server-streaming и отмены — сила gRPC.",t:"Задание: ListUsers стримом + deadline.",h:5,l:["https://grpc.io/docs/languages/go/basics/"],x:"gRPC docs: стриминг и deadlines"},
+{w:"gRPC + REST рядом",y:"Часто оба: gRPC внутри, REST наружу.",t:"Задание: REST-хендлер, дергающий gRPC.",h:5,l:["https://grpc.io/docs/languages/go/"]}],x:"grpc-gateway README: REST поверх gRPC"},
+{id:"pets",t:"Pet-проекты на GitHub",m:"seq",ds:"Доказательство навыков: README, compose, миграции, тесты, CI.",hint:"Официальная дока: GitHub Docs (README, Actions)",sub:[
+{w:"Проект 1: Task API (REST)",y:"Визитка: Gin-Echo + Postgres + Redis + Docker.",t:"Задание: CRUD, миграции, кэш, README, тесты.",h:30,hint:"искать в официальной документации: GitHub README и Actions",x:"GitHub docs: README + Actions для Go"},
+{w:"Проект 2: gRPC-сервис",y:"Закрывает требование gRPC из вакансии.",t:"Задание: users-service + REST-gateway + compose.",h:20,l:["https://grpc.io/docs/languages/go/"],x:"gRPC Examples: helloworld + route-guide на Go"},
+{w:"Оформление и CI",y:"Ревью смотрят на гигиену.",t:"Задание: README, go vet, golangci, Actions.",h:8,l:["https://go.dev/doc/"]}]}],
+mi:{t:"Финиш — готов к вакансии",c:["2 репо с README и запуском через compose","gRPC-сервис с proto и стримингом","Рассказываешь про JOIN, Redis, goroutines на своем коде"]}}];
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function links(a){if(!a||!a.length)return"";return a.map(u=>'<a href="'+u+'" target="_blank" rel="noopener">'+esc(u.replace("https://","").slice(0,44))+"</a>").join(" | ")}
+function streak(){if(!DY.length)return 0;const set=new Set(DY);let s=0;const d=new Date();if(!set.has(today()))d.setDate(d.getDate()-1);while(true){const k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");if(set.has(k)){s++;d.setDate(d.getDate()-1)}else break}return s}
+function lastAct(){if(!DY.length)return"нет активности";const t=today();const last=DY[DY.length-1];const ms=(new Date(t)-new Date(last))/864e5;if(ms<=0)return"сегодня";if(ms<=1)return"вчера";return Math.round(ms)+" дн. назад"}
+function fmtDate(dt){return dt.toISOString().slice(0,10)}
+function fcast(hrs){if(!(PW>0)||!(hrs>0))return"—";const w=Math.ceil(hrs/PW);const d=new Date();d.setDate(d.getDate()+w*7);return fmtDate(d)+" (~"+w+" нед.)"}
+function render(){const ap=document.getElementById("app");const scY=window.scrollY||0;try{ap.querySelectorAll(".n.op").forEach(x=>{OPEN[x.id]=1})}catch(e){}ap.innerHTML="";let tot=0,dn=0,hrsLeft=0;let now=null;
+D.forEach(stg=>{let stTot=0,stDn=0,stHrs=0;stg.n.forEach(nd=>{nd.sub.forEach((s2,i)=>{stTot++;const v=st(nd.id+":"+i);if(v==="done")stDn++;else stHrs+=s2.h})});const stPc=stTot?Math.round(stDn/stTot*100):0;let h='<div class="st"><div class="sh"><h2>'+esc(stg.s)+"</h2><p>"+esc(stg.d)+'</p><div class="sSb"><i style="width:'+stPc+'%"></i></div><div class="sSt">'+stDn+"/"+stTot+" подтем · "+stPc+"%</div></div><div class='nd'>";
+stg.n.forEach(nd=>{const subs=nd.sub.length;let sdn=0;nd.sub.forEach((s2,i)=>{tot++;const v=st(nd.id+":"+i);if(v==="done"){dn++;sdn++}else hrsLeft+=s2.h;if(v==="learning"&&!now)now={st:stg.s,nd:nd.t,sb:s2.w}});
+const pc=Math.round(sdn/subs*100);const mc=nd.m==="seq"?"sq":"pa";const ml=nd.m==="seq"?"строго по порядку":"можно параллельно";
+h+='<div class="n '+nd.m+(OPEN["n-"+nd.id]?" op":"")+'" id="n-'+nd.id+'"><span class="d"></span><div class="nh" data-id="'+nd.id+'"><span style="color:var(--m)">&#9656;</span><div><span class="tag '+mc+'">'+ml+'</span> <span class="nt">'+esc(nd.t)+"</span><div class='nde'>"+esc(nd.ds)+"</div>";
+if(nd.docs)h+='<div class="mt">Docs: '+links(nd.docs)+"</div>";if(nd.hint)h+='<div class="hn">'+esc(nd.hint)+"</div>";
+h+="</div><span class='np"+(pc===100?" dn":"")+"'>"+sdn+"/"+subs+" | "+pc+"%</span></div><div class='nb'>";
+nd.sub.forEach((s2,i)=>{const k=nd.id+":"+i;const v=st(k);h+='<div class="s'+(v==="done"?" dn":"")+'"><div class="st2"><button class="stt '+v+'" data-k="'+k+'" title="'+v+' (клик — сменить статус)"></button><div style="flex:1"><div style="font-weight:650">'+esc(s2.w)+' <span class="tag">~'+s2.h+' ч</span> <span class="tag '+(v==="done"?"pa":(v==="learning"?"sq":""))+'">'+v+'</span></div><div style="font-size:13px">'+esc(s2.y)+'</div><div class="tk">'+esc(s2.t)+"</div>";
+if(s2.l)h+='<div class="mt">Docs: '+links(s2.l)+"</div>";if(s2.hint)h+='<div class="hn">'+esc(s2.hint)+"</div>";if(s2.x)h+='<div class="x2">Дополнительно: '+esc(s2.x)+"</div>";
+const nv=NT[k]||"";h+='<button class="sbt'+(nv?" has":"")+'" data-n="'+k+'">📝 заметка</button><textarea class="nta" data-t="'+k+'" style="display:'+(nv?"block":"none")+'" placeholder="Свои заметки...">'+esc(nv)+"</textarea>";
+h+="</div></div></div>"});h+="</div></div>"});h+="</div>";
+if(stg.mi)h+='<div class="mi"><h3>Milestone: '+esc(stg.mi.t)+"</h3><ul>"+stg.mi.c.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul></div>";
+h+="</div>";const se=document.createElement("div");se.innerHTML=h;ap.appendChild(se.firstChild)});
+const p=tot?Math.round(dn/tot*100):0;document.getElementById("p").textContent=p;document.getElementById("b").style.width=p+"%";document.getElementById("c").textContent=dn+"/"+tot+" подтем · осталось ~"+hrsLeft+" ч";
+document.getElementById("nw").innerHTML=now?("Сейчас изучаю: <b>"+esc(now.sb)+"</b> · "+esc(now.nd)+" · "+esc(now.st)):"Сейчас изучаю: Отметь, что учишь сейчас 👆";
+document.getElementById("sk").textContent="Активность: streak "+streak()+" дн. · последняя: "+lastAct();
+// ближайший невыполненный milestone
+let miTxt="все milestone закрыты 🎉";for(const sg of D){let need=0,hrs=0;sg.n.forEach(nd=>{nd.sub.forEach((s2,i)=>{if(st(nd.id+":"+i)!=="done"){need++;hrs+=s2.h}})});if(need>0){miTxt=sg.mi.t+": осталось "+need+" подтем (~"+hrs+" ч) → "+fcast(hrs);break}}
+document.getElementById("fc").textContent="Финиш карты: "+fcast(hrsLeft)+" · "+miTxt;
+const pwEl=document.getElementById("pw");if(document.activeElement!==pwEl)pwEl.value=PW;try{if(scY)window.scrollTo(0,scY)}catch(e){}
+ap.querySelectorAll(".nh").forEach(e=>e.onclick=ev=>{if(ev.target.tagName==="A"||ev.target.tagName==="INPUT"||ev.target.tagName==="BUTTON"||ev.target.tagName==="TEXTAREA")return;var nn=document.getElementById("n-"+e.dataset.id);nn.classList.toggle("op");if(nn.classList.contains("op"))OPEN[nn.id]=1;else delete OPEN[nn.id];try{localStorage.setItem("go-roadmap-open",JSON.stringify(OPEN))}catch(e){}});
+ap.querySelectorAll(".stt").forEach(e=>e.onclick=ev=>{ev.stopPropagation();const k=e.dataset.k;const cur=st(k);const nx=cur==="todo"?"learning":(cur==="learning"?"done":"todo");if(nx==="todo")delete S[k];else S[k]=nx;if(nx==="done")markDay();sv();render()});
+ap.querySelectorAll(".sbt").forEach(e=>e.onclick=ev=>{ev.stopPropagation();const t=ap.querySelector('textarea[data-t="'+e.dataset.n+'"]');if(t)t.style.display=(t.style.display==="none"?"block":"none")});
+ap.querySelectorAll(".nta").forEach(e=>e.oninput=()=>{const k=e.dataset.t;if(e.value)NT[k]=e.value;else delete NT[k];svN();const b=ap.querySelector('button[data-n="'+k+'"]');if(b)b.classList.toggle("has",!!e.value)});}
+document.getElementById("e1").onclick=()=>{document.querySelectorAll(".n").forEach(x=>{x.classList.add("op");OPEN[x.id]=1});try{localStorage.setItem("go-roadmap-open",JSON.stringify(OPEN))}catch(e){}};
+document.getElementById("e0").onclick=()=>{document.querySelectorAll(".n").forEach(x=>x.classList.remove("op"));OPEN={};try{localStorage.setItem("go-roadmap-open","{}")}catch(e){}};
+document.getElementById("rs").onclick=()=>{if(confirm("Сбросить весь прогресс?")){S={};DY=[];NT={};sv();svD();svN();render()}};
+document.getElementById("pw").onchange=e=>{PW=parseInt(e.target.value,10);if(!(PW>0))PW=8;svP();render()};
+document.getElementById("dl").onclick=()=>{const data={v:2,status:S,days:DY,notes:NT,pace:PW};const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="go-roadmap-progress.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
+document.getElementById("ul").onclick=()=>document.getElementById("fi").click();
+document.getElementById("fi").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(d.status&&typeof d.status==="object"){S=d.status;for(const k in S){if(S[k]===1||S[k]===true)S[k]="done"}sv()}if(Array.isArray(d.days)){DY=d.days;svD()}if(d.notes&&typeof d.notes==="object"){NT=d.notes;svN()}if(parseInt(d.pace,10)>0){PW=parseInt(d.pace,10);svP()}render()}catch(err){alert("Не удалось прочитать файл: "+err)}};r.readAsText(f);e.target.value=""};
+var GV={nodes:[],edges:[],built:false,run:true,sel:null,hov:null};
+GV.cam={x:0,y:0,z:0.85};GV.drag=null;GV.pan=null;
+function gAgg(kind,id){var best="todo";
+var rk={todo:0,learning:1,done:2};
+for(var si=0;si<D.length;si++){var sg=D[si];
+for(var ni=0;ni<sg.n.length;ni++){var nd=sg.n[ni];
+var rel=false;
+if(kind==="stage"&&("S"+si)===id)rel=true;
+if(kind==="node"&&nd.id===id)rel=true;
+if(!rel)continue;
+for(var k=0;k<nd.sub.length;k++){var v=st(nd.id+":"+k);
+if(rk[v]>rk[best])best=v}}}
+return best}
+function gStatOf(n){
+if(n.kind==="sub")return st(n.ref+":"+n.sub);
+if(n.kind==="node")return gAgg("node",n.ref);
+return gAgg("stage",n.id)}
+
+function gBuild(){if(GV.built)return;GV.built=true;
+function h32(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0}return (h>>>0)/4294967295}
+for(var si=0;si<D.length;si++){var sg=D[si];
+var ang=-1.5708+si*6.2832/D.length;
+var sx=Math.cos(ang)*400+(h32("Sx"+si)-0.5)*70;
+var sy=Math.sin(ang)*290+(h32("Sy"+si)-0.5)*70;
+GV.nodes.push({id:"S"+si,kind:"stage",label:sg.s,r:26,x:sx,y:sy,vx:0,vy:0,fx:null,fy:null,cx:sx,cy:sy});
+if(si>0)GV.edges.push({a:"S"+(si-1),b:"S"+si,len:300,kind:"path"});
+var prev=null;
+for(var ni=0;ni<sg.n.length;ni++){var nd=sg.n[ni];
+var a2=ang+(ni-(sg.n.length-1)/2)*0.55;
+var nx=sx+Math.cos(a2)*175+(h32(nd.id)-0.5)*90;
+var ny=sy+Math.sin(a2)*150+(h32(nd.id+"y")-0.5)*90;
+GV.nodes.push({id:"N"+nd.id,kind:"node",label:nd.t,ref:nd.id,r:15,x:nx,y:ny,vx:0,vy:0,fx:null,fy:null,cx:sx,cy:sy,ds:nd.ds,docs:nd.docs,hint:nd.hint});
+GV.edges.push({a:"S"+si,b:"N"+nd.id,len:175,kind:(nd.m==="seq"?"hard":"soft")});
+if(prev)GV.edges.push({a:prev,b:"N"+nd.id,len:190,kind:(nd.m==="seq"?"hard":"soft")});
+prev="N"+nd.id;
+for(var k=0;k<nd.sub.length;k++){var sb=nd.sub[k];
+var sa=a2+(k-(nd.sub.length-1)/2)*0.5;
+var qx=nx+Math.cos(sa)*95+(h32(nd.id+k)-0.5)*56;
+var qy=ny+Math.sin(sa)*80+(h32(nd.id+k+"q")-0.5)*56;
+GV.nodes.push({id:"Q"+nd.id+k,kind:"sub",label:sb.w,ref:nd.id,sub:k,r:7.5,x:qx,y:qy,vx:0,vy:0,fx:null,fy:null,cx:nx,cy:ny,y:sb.y,t:sb.t,h:sb.h,l:sb.l,hint:sb.hint,x2:sb.x});
+GV.edges.push({a:"N"+nd.id,b:"Q"+nd.id+k,len:95,kind:"sub"})}}}
+var byId={};
+for(var i=0;i<GV.nodes.length;i++)byId[GV.nodes[i].id]=GV.nodes[i];
+for(var j=0;j<GV.edges.length;j++){GV.edges[j].A=byId[GV.edges[j].a];GV.edges[j].B=byId[GV.edges[j].b]}}
+function gTick(){var ns=GV.nodes,i,j;
+for(i=0;i<ns.length;i++){var a=ns[i];
+for(j=i+1;j<ns.length;j++){var b=ns[j];
+var dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;
+var md=a.r+b.r+14;
+if(d2<md*md){var dd=Math.sqrt(d2)||1;dx=dx/dd*md;dy=dy/dd*md;d2=md*md}
+var d=Math.sqrt(d2)||1;
+if(d>520)continue;
+var f=Math.min(2600/(d2+40),3.2);
+var ux=dx/d*f,uy=dy/d*f;
+a.vx+=ux;a.vy+=uy;b.vx-=ux;b.vy-=uy}}
+for(var e=0;e<GV.edges.length;e++){var E=GV.edges[e],A=E.A,B=E.B;
+if(!A||!B)continue;
+var dx2=B.x-A.x,dy2=B.y-A.y,dv=Math.sqrt(dx2*dx2+dy2*dy2)||1;
+var sl=(gStatOf(A)==="done"&&gStatOf(B)==="done")?0.55:1;
+var kk=E.kind==="soft"?0.012:(E.kind==="sub"?0.03:0.02);
+var ff=(dv-E.len*sl)*kk;
+var vx=dx2/dv*ff,vy=dy2/dv*ff;
+A.vx+=vx;A.vy+=vy;B.vx-=vx;B.vy-=vy}
+for(var q=0;q<ns.length;q++){var n=ns[q];
+var g=n.kind==="stage"?0.004:0.01;
+n.vx+=(n.cx-n.x)*g;n.vy+=(n.cy-n.y)*g;
+n.vx+=(0-n.x)*0.0012;n.vy+=(0-n.y)*0.0012;
+if(n.fx!=null){n.x=n.fx;n.y=n.fy;n.vx=0;n.vy=0;continue}
+n.vx*=0.87;n.vy*=0.87;n.x+=n.vx;n.y+=n.vy}}
+
+function gCol(n){var s=gStatOf(n);
+if(s==="done")return["#3fb950",s];
+if(s==="learning")return["#2f81f7",s];
+return["#6e7681",s]}
+function gDraw(){var cv=document.getElementById("gcv");
+if(!cv)return;
+var rc=cv.getBoundingClientRect();
+var dpr=1;
+try{dpr=Math.min(2,window.devicePixelRatio||1)}catch(e){dpr=1}
+var W=Math.max(300,rc.width),H=Math.max(320,rc.height||440);
+if(!W||W<10)W=cv.clientWidth||800;
+if(!H||H<10)H=440;
+if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+var cx=cv.getContext("2d");
+cx.setTransform(dpr,0,0,dpr,0,0);
+cx.fillStyle="#0a0e14";cx.fillRect(0,0,W,H);
+var cam=GV.cam,tm=0;
+try{tm=performance.now()/1000}catch(e){tm=0}
+var i;
+for(i=0;i<GV.edges.length;i++){var e=GV.edges[i];
+if(!e.A||!e.B)continue;
+var ax=(e.A.x-cam.x)*cam.z+W/2,ay=(e.A.y-cam.y)*cam.z+H/2;
+var bx=(e.B.x-cam.x)*cam.z+W/2,by=(e.B.y-cam.y)*cam.z+H/2;
+var soft=e.kind==="soft";
+var dA=gCol(e.A)[1]==="done",dB=gCol(e.B)[1]==="done";
+if(dA&&dB)cx.strokeStyle="rgba(63,185,80,.4)";
+else if(soft)cx.strokeStyle="rgba(139,148,158,.4)";
+else cx.strokeStyle="rgba(88,166,255,.65)";
+cx.lineWidth=Math.max(0.6,(soft?1:1.8)*cam.z*((dA&&dB)?0.7:1));
+if(soft)cx.setLineDash([5,5]);
+else if(e.kind==="path")cx.setLineDash([2,6]);
+else cx.setLineDash([]);
+cx.beginPath();cx.moveTo(ax,ay);cx.lineTo(bx,by);cx.stroke();cx.setLineDash([])}
+for(i=0;i<GV.nodes.length;i++){var n=GV.nodes[i];
+var px=(n.x-cam.x)*cam.z+W/2,py=(n.y-cam.y)*cam.z+H/2;
+var r=n.r*cam.z;
+if(px<-60||py<-40||px>W+60||py>H+40)continue;
+var cc=gCol(n);
+if(cc[1]==="learning"){cx.strokeStyle="rgba(47,129,247,.55)";cx.lineWidth=2;
+cx.beginPath();cx.arc(px,py,r+4+Math.sin(tm*4)*2.5,0,7);cx.stroke()}
+if(cc[1]==="todo")cx.globalAlpha=0.75;
+cx.fillStyle=cc[0];
+cx.beginPath();cx.arc(px,py,Math.max(2.5,r),0,7);cx.fill();cx.globalAlpha=1;
+if(GV.sel===n.id){cx.strokeStyle="#fff";cx.lineWidth=2;
+cx.beginPath();cx.arc(px,py,Math.max(3,r+3),0,7);cx.stroke()}
+if(GV.hov===n.id){cx.strokeStyle="rgba(255,255,255,.7)";cx.lineWidth=1.5;
+cx.beginPath();cx.arc(px,py,Math.max(3,r+5),0,7);cx.stroke()}
+var show=n.kind!=="sub"||cam.z>1.35||GV.hov===n.id||GV.sel===n.id;
+if(show){var fs=n.kind==="stage"?12:(n.kind==="node"?11:10);
+cx.font=fs+"px system-ui";
+var tx=n.label.length>34?n.label.slice(0,33)+"..":n.label;
+var tw=cx.measureText(tx).width;
+cx.fillStyle="rgba(10,14,20,.78)";cx.fillRect(px-tw/2-4,py+r+2,tw+8,fs+6);
+if(n.kind==="stage")cx.fillStyle="#fff";
+else cx.fillStyle="#c9d1d9";
+cx.fillText(tx,px-tw/2,py+r+2+fs)}}
+if(GV.hov){var hn=null;
+for(var k=0;k<GV.nodes.length;k++)if(GV.nodes[k].id===GV.hov)hn=GV.nodes[k];
+if(hn&&hn.kind==="sub"){var hx=(hn.x-cam.x)*cam.z+W/2,hy=(hn.y-cam.y)*cam.z+H/2;
+cx.font="11px system-ui";
+var tt=hn.label+" . "+(hn.h||"?")+" h . "+gStatOf(hn);
+var w2=cx.measureText(tt).width;
+cx.fillStyle="rgba(22,27,34,.95)";cx.fillRect(hx-w2/2-6,hy-hn.r*cam.z-26,w2+12,20);
+cx.strokeStyle="#2a3342";cx.strokeRect(hx-w2/2-6,hy-hn.r*cam.z-26,w2+12,20);
+cx.fillStyle="#e6edf3";cx.fillText(tt,hx-w2/2,hy-hn.r*cam.z-12)}}}
+function gLoop(){if(!GV.built)return;
+if(GV.run&&!GV.drag&&!GV.pan){gTick();gTick()}
+gDraw();
+try{requestAnimationFrame(gLoop)}catch(e){}}
+
+function gEsc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function gSide(n){var side=document.getElementById("gside");
+if(!side)return;
+if(!n){side.classList.remove("on");side.innerHTML="";GV.sel=null;return}
+GV.sel=n.id;
+var ss=gStatOf(n);
+var h='<button class="btn" id="gx">Close</button> ';
+h+='<span class="tag">'+gEsc(n.kind)+'</span><h3>'+gEsc(n.label)+'</h3>';
+if(n.ds)h+='<div class="mut">'+gEsc(n.ds)+'</div>';else if(n.kind!=="stage"&&n.y&&typeof n.y==="string")h+='<div class="mut">'+gEsc(n.y)+'</div>';
+if(n.t)h+='<div style="margin-top:8px">'+gEsc(n.t)+'</div>';
+if(n.h!=null)h+='<div class="mut">~'+gEsc(n.h)+' h</div>';
+if(n.l&&n.l.length)h+='<div class="mt">Docs: '+links(n.l)+'</div>';
+if(n.docs&&n.docs.length)h+='<div class="mt">Docs: '+links(n.docs)+'</div>';
+if(n.hint)h+='<div class="hn">'+gEsc(n.hint)+'</div>';
+if(n.x2)h+='<div class="x2">Extra: '+gEsc(n.x2)+'</div>';
+h+='<div class="row"><div id="gstat"><button class="btn'+(ss==="todo"?" on":"")+'" data-s="todo">todo</button>';
+h+='<button class="btn'+(ss==="learning"?" on":"")+'" data-s="learning">learning</button>';
+h+='<button class="btn'+(ss==="done"?" on":"")+'" data-s="done">done</button></div></div>';
+if(n.kind==="sub"){var nv="";
+try{nv=NT[n.ref+":"+n.sub]||""}catch(e){nv=""}
+h+='<div class="mut">Note</div><textarea id="gnt" placeholder="notes...">'+gEsc(nv)+'</textarea>'}
+else{h+='<div class="mut">Stage/topic = aggregate of subs. Open a satellite sub to change it.</div>'}
+side.innerHTML=h;
+side.classList.add("on");
+document.getElementById("gx").onclick=function(){gSide(null);gDraw()};
+var btns=side.querySelectorAll("#gstat button");
+for(var i=0;i<btns.length;i++)(function(b){b.onclick=function(){
+var v=b.getAttribute("data-s");
+if(n.kind==="sub"){if(v==="todo")delete S[n.ref+":"+n.sub];
+else S[n.ref+":"+n.sub]=v;
+if(v==="done")markDay();
+sv();render();gSide(n);gDraw()}
+else{alert("Aggregate status: mark its sub-satellites.")}};})(btns[i]);
+var ta=document.getElementById("gnt");
+if(ta)ta.oninput=function(){var k=n.ref+":"+n.sub;
+if(ta.value)NT[k]=ta.value;
+else delete NT[k];
+svN();render()}}
+
+function gPick(px,py){var cv=document.getElementById("gcv");
+var r=cv.getBoundingClientRect();
+var mx=px-r.left,my=py-r.top;
+var best=null,bd=1e9;
+for(var i=0;i<GV.nodes.length;i++){var n=GV.nodes[i];
+var wx=(n.x-GV.cam.x)*GV.cam.z+r.width/2;
+var wy=(n.y-GV.cam.y)*GV.cam.z+r.height/2;
+var dx=wx-mx,dy=wy-my;
+var d=Math.sqrt(dx*dx+dy*dy);
+var tol=Math.max(10,n.r*GV.cam.z+6);
+if(d<tol&&d<bd){bd=d;best=n}}
+return best}
+function gW(e){var cv=document.getElementById("gcv");
+var r=cv.getBoundingClientRect();
+return{x:(e.clientX-r.left-r.width/2)/GV.cam.z+GV.cam.x,y:(e.clientY-r.top-r.height/2)/GV.cam.z+GV.cam.y}}
+function gBind(){var cv=document.getElementById("gcv");
+if(!cv||cv.getAttribute("data-gb"))return;
+cv.setAttribute("data-gb","1");
+cv.addEventListener("pointerdown",function(e){
+try{cv.setPointerCapture(e.pointerId)}catch(x){}
+var n=gPick(e.clientX,e.clientY);
+if(n){var w=gW(e);
+GV.drag={n:n,ox:w.x-n.x,oy:w.y-n.y,moved:false};
+n.fx=n.x;n.fy=n.y}
+else{GV.pan={x:e.clientX,y:e.clientY,cx:GV.cam.x,cy:GV.cam.y}}
+cv.style.cursor="grabbing"});
+cv.addEventListener("pointermove",function(e){
+if(GV.drag){var w=gW(e);
+GV.drag.n.fx=w.x-GV.drag.ox;GV.drag.n.fy=w.y-GV.drag.oy;
+GV.drag.n.x=GV.drag.n.fx;GV.drag.n.y=GV.drag.n.fy;GV.drag.moved=true}
+else if(GV.pan){GV.cam.x=GV.pan.cx-(e.clientX-GV.pan.x)/GV.cam.z;
+GV.cam.y=GV.pan.cy-(e.clientY-GV.pan.y)/GV.cam.z}
+else{var h=gPick(e.clientX,e.clientY);
+GV.hov=h?h.id:null;
+if(h)cv.style.cursor="pointer";
+else cv.style.cursor="grab"}});
+cv.addEventListener("pointerup",function(e){
+if(GV.drag){var n=GV.drag.n,mv=GV.drag.moved;
+GV.drag=null;cv.style.cursor="grab";n.fx=null;n.fy=null;
+if(!mv)gSide(n)}
+else if(GV.pan){var dx=e.clientX-GV.pan.x,dy=e.clientY-GV.pan.y;
+GV.pan=null;cv.style.cursor="grab";
+if(dx*dx+dy*dy<16)gSide(null)}});
+cv.addEventListener("pointercancel",function(){GV.drag=null;GV.pan=null});
+cv.addEventListener("wheel",function(e){e.preventDefault();
+var f=e.deltaY<0?1.12:0.89;
+var nz=Math.min(3.2,Math.max(0.35,GV.cam.z*f));
+var r=cv.getBoundingClientRect();
+var mx=e.clientX-r.left-r.width/2,my=e.clientY-r.top-r.height/2;
+var wx=mx/GV.cam.z+GV.cam.x,wy=my/GV.cam.z+GV.cam.y;
+GV.cam.z=nz;GV.cam.x=wx-mx/nz;GV.cam.y=wy-my/nz},{passive:false});
+window.addEventListener("resize",function(){gDraw()});
+document.getElementById("gfit").onclick=function(){GV.cam={x:0,y:0,z:0.85};gDraw()};
+document.getElementById("gstop").onclick=function(e){GV.run=!GV.run;
+if(GV.run)e.target.textContent="Pause";
+else e.target.textContent="Play";
+if(GV.run)try{requestAnimationFrame(gLoop)}catch(x){}};
+document.getElementById("gcur").onclick=function(){
+var tgt=null,i;
+for(i=0;i<GV.nodes.length&&!tgt;i++){var a=GV.nodes[i];
+if(a.kind==="sub"&&gStatOf(a)==="learning")tgt=a}
+if(!tgt)for(i=0;i<GV.nodes.length&&!tgt;i++){var b=GV.nodes[i];
+if(b.kind!=="sub"&&gStatOf(b)==="learning")tgt=b}
+if(!tgt){alert("No learning node. Mark one as learning.");return}
+gSide(tgt);
+var c0={x:GV.cam.x,y:GV.cam.y,z:GV.cam.z};
+var c1={x:tgt.x,y:tgt.y,z:Math.max(GV.cam.z,1.6)};
+var t0=0;
+try{t0=performance.now()}catch(e){t0=0}
+function anim(){var now=0;
+try{now=performance.now()}catch(e){now=t0+500}
+var k=Math.min(1,(now-t0)/450);
+var ez=1-Math.pow(1-k,3);
+GV.cam.x=c0.x+(c1.x-c0.x)*ez;
+GV.cam.y=c0.y+(c1.y-c0.y)*ez;
+GV.cam.z=c0.z+(c1.z-c0.z)*ez;
+if(k<1&&document.body.classList.contains("gmode"))requestAnimationFrame(anim)}
+anim()}}
+function gShow(on){
+document.body.classList.toggle("gmode",!!on);
+document.getElementById("vG").classList.toggle("on",!!on);
+document.getElementById("vL").classList.toggle("on",!on);
+try{localStorage.setItem("go-roadmap-view",on?"g":"l")}catch(e){}
+if(on){try{gBuild();gBind();
+GV.cam={x:0,y:0,z:0.85};
+gDraw();
+try{requestAnimationFrame(gLoop)}catch(x){}}
+catch(err){alert("Graph failed, staying in list: "+err);gShow(false)}}
+else{render()}}
+
+render();document.querySelectorAll(".n").forEach((x,i)=>{if(i<2)x.classList.add("op")});
+try{document.getElementById("vG").onclick=function(){gShow(true)};document.getElementById("vL").onclick=function(){gShow(false)};var gv=null;try{gv=localStorage.getItem("go-roadmap-view")}catch(e){}if(gv==="g")gShow(true)}catch(e){}
+</script></body></html>
+
