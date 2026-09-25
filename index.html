@@ -48,12 +48,14 @@ const D=[
 {id:"gomod",t:"Модули: go mod",m:"seq",ds:"Сборка и зависимости: init, tidy, версии.",docs:["https://go.dev/doc/tutorial/create-module"],sub:[
 {w:"init, build, run",y:"Чтобы проект собирался одной командой.",t:"Задание: модуль, 2 пакета, сборка всего проекта.",h:3,l:["https://go.dev/doc/tutorial/create-module"],x:"Go docs: Tutorial Create a Module (офиц. дока)"},
 {w:"get и tidy",y:"Чистое дерево зависимостей.",t:"Задание: подключи uuid, выполни tidy.",h:3,l:["https://go.dev/doc/modules/gomod-ref"],x:"Go blog: Using Go Modules (офиц. блог)"},
-{w:"Версии и replace",y:"Semver и локальная замена.",t:"Задание: подключи пакет через replace.",h:3,l:["https://go.dev/doc/modules/gomod-ref"]}],x:"Go docs: Minimal Version Selection + replace"},
+{w:"Версии и replace",y:"Semver и локальная замена.",t:"Задание: подключи пакет через replace.",h:3,l:["https://go.dev/doc/modules/gomod-ref"]},
+{w:"Конфиг: env и .env",y:"Сервис читает настройки из окружения, а не из кода.",t:"Задание: PORT/DSN через env + .env + проверка обязательных ключей.",h:3,hint:"искать: os.Getenv + godotenv README + 12factor config"}],x:"Go docs: Minimal Version Selection + replace"},
 {id:"std",t:"Стандартная библиотека",m:"seq",ds:"HTTP, JSON, контекст, тесты — все на stdlib.",docs:["https://go.dev/pkg/"],sub:[
 {w:"net-http сервер",y:"Даже с Gin внутри — net-http.",t:"Задание: сервер с health и echo + таймауты.",h:6,l:["https://pkg.go.dev/net/http"],x:"Go by Example: HTTP-серверы, таймауты, graceful shutdown"},
 {w:"encoding-json",y:"REST — это JSON туда-сюда.",t:"Задание: CRUD в памяти с корректными статусами.",h:4,l:["https://pkg.go.dev/encoding/json"],x:"Go by Example: JSON — Marshal, Unmarshal, теги"},
 {w:"context",y:"Отмена и таймауты для HTTP, SQL и gRPC.",t:"Задание: хендлер с WithTimeout.",h:4,l:["https://pkg.go.dev/context"],x:"Go blog: Concurrency Patterns — Context (офиц. блог Go)"},
-{w:"testing table-driven",y:"Идиома Go.",t:"Задание: покрой функцию 5 кейсами.",h:5,l:["https://pkg.go.dev/testing"]}]}],
+{w:"testing table-driven",y:"Идиома Go.",t:"Задание: покрой функцию 5 кейсами.",h:4,l:["https://pkg.go.dev/testing"]},
+{w:"httptest + моки",y:"Тесты HTTP без живого сервера: recorder + моки зависимостей.",t:"Задание: хендлер health через httptest + мок репозитория.",h:4,hint:"искать: net/http/httptest docs + go.uber.org/mock"}]}],
 mi:{t:"Milestone 1 — Go-база",c:["CLI и HTTP на stdlib без подсказок","Объясняешь interface и wrap ошибок","Модуль собирается, тесты зеленые"]},x:"Go by Example: тестирование table-driven"},
 {s:"2. Сети, REST и concurrency",d:"После Go-базы. Concurrency — строго после синтаксиса; сети и REST — параллельно с ним.",n:[
 {id:"net",t:"Сети: HTTP, TCP-IP, уровни",m:"par",ds:"Как запрос идет по сети: TCP, HTTP, TLS, DNS. Нужно для отладки API и понимания gRPC.",hint:"Единой официальной доки нет — искать: RFC 9110 (HTTP), MDN HTTP, TCP-IP Illustrated",sub:[
@@ -63,7 +65,8 @@ mi:{t:"Milestone 1 — Go-база",c:["CLI и HTTP на stdlib без подс�
 {id:"rest",t:"REST API (база)",m:"par",ds:"Ресурсы, JSON, статусы, идемпотентность. Главный интерфейс backend-приложений.",hint:"Спец. официальной REST-доки нет — искать: REST API Tutorial, RFC 9110",sub:[
 {w:"Ресурсы и маршруты",y:"Проектирование users-id вместо getUser.",t:"Задание: опиши таблицу 5 endpoints CRUD users и orders: метод + путь + статус.",h:4,hint:"искать: REST API Tutorial (restapitutorial.com)",x:"REST API Tutorial: ресурсы и именование"},
 {w:"JSON, статусы, ошибки",y:"Единый формат ошибок решает боль фронта.",t:"Задание: CRUD на stdlib с единым JSON ошибок.",h:6,l:["https://pkg.go.dev/encoding/json"],x:"JSON API: формат ошибок + статусы"},
-{w:"Query, пагинация, фильтры",y:"Без limit и offset API ляжет на больших таблицах.",t:"Задание: items с page, limit и sort.",h:4,hint:"искать: JSON API pagination"}],x:"JSON API: пагинация limit-offset"},
+{w:"Query, пагинация, фильтры",y:"Без limit и offset API ляжет на больших таблицах.",t:"Задание: items с page, limit и sort.",h:4,hint:"искать: JSON API pagination"},
+{w:"OpenAPI-документация",y:"Контракт API читается людьми и генераторами клиентов.",t:"Задание: openapi.yaml для CRUD users + валидация через Swagger UI.",h:4,hint:"искать: OpenAPI 3 spec + swagger.io"}],x:"JSON API: пагинация limit-offset"},
 {id:"conc",t:"Concurrency: goroutines, channels",m:"seq",ds:"Главное преимущество Go: горутины, каналы, select, sync. Ошибки тут = гонки.",docs:["https://go.dev/tour/concurrency/1","https://go.dev/doc/effective_go"],sub:[
 {w:"Goroutines + WaitGroup",y:"Параллельные задачи без потоков ОС.",t:"Задание: скачать 5 URL параллельно через WaitGroup.",h:6,l:["https://go.dev/tour/concurrency/1"],x:"Go blog: Share Memory By Communicating (офиц. блог Go)"},
 {w:"Channels + select",y:"Обмен данными и таймауты.",t:"Задание: worker pool на 3 воркера + select с timeout.",h:8,l:["https://go.dev/tour/concurrency/2"],x:"Go by Example: каналы, select, таймауты, worker pools"},
@@ -82,6 +85,7 @@ mi:{t:"Milestone 2 — HTTP + concurrency",c:["REST CRUD с пагинацией
 {id:"godb",t:"Go + SQL: database-sql",m:"seq",ds:"Мост Go-Postgres: пул, Query и Exec, транзакции из кода.",docs:["https://go.dev/doc/database/database-sql","https://pkg.go.dev/database/sql"],sub:[
 {w:"Подключение и пул (pgx)",y:"Пул решает скорость и лимиты коннектов.",t:"Задание: подключи pgx с MaxConns=5, выполни Ping и SELECT version().",h:4,l:["https://pkg.go.dev/github.com/jackc/pgx/v5"],x:"pgx README + Go database-sql docs: пул соединений"},
 {w:"Query, Exec, Scan",y:"Чтение строк и запись без магии.",t:"Задание: CRUD users на database-sql или pgx.",h:6,l:["https://go.dev/doc/database/database-sql"],x:"Go wiki: database-sql tutorial (офиц. wiki)"},
+{w:"testcontainers-go",y:"Интеграционные тесты против настоящего Postgres в Docker.",t:"Задание: тест репозитория users через testcontainers-go.",h:5,l:["https://golang.testcontainers.org/"]},
 {w:"Транзакции из Go + sqlc",y:"Транзакция в коде + генерация типов.",t:"Задание: перевод баланса 100 единиц между двумя счетами в tx + сгенерируй типы через sqlc.",h:6,hint:"искать в официальной документации: sqlc docs (sqlc.dev) и pgx docs"}]}],
 mi:{t:"Milestone 3 — данные",c:["Схема users-orders с FK и индексами","JOIN + транзакция + EXPLAIN без подсказок","CRUD из Go через пул в транзакции"]}},
 {s:"4. Redis, Docker, Gin-Echo",d:"Все три — параллельно между собой после блоков 1-2. Gin — после REST.",n:[
@@ -96,6 +100,7 @@ mi:{t:"Milestone 3 — данные",c:["Схема users-orders с FK и инд
 {id:"gin",t:"Gin или Echo",m:"seq",ds:"Фреймворк для REST: роуты, валидация, middleware. Выбери один.",hint:"Официальная дока — на выбор: Gin Web Framework docs или Echo docs (echo.labstack.com)",sub:[
 {w:"Роуты, параметры, JSON",y:"Скелет любого API.",t:"Задание: CRUD users на Gin или Echo.",h:5,hint:"искать в официальной документации: Gin Quick Start или Echo Guide"},
 {w:"Middleware: лог, auth, CORS",y:"Сквозная логика без дублей.",t:"Задание: middleware лога + проверка токена.",h:4,hint:"искать в официальной документации: Gin Middleware или Echo Middleware"},
+{w:"JWT: access + refresh",y:"Кто ты и до каких пор: access короткоживущий, refresh в httpOnly.",t:"Задание: login с парой токенов + middleware проверки access.",h:6,hint:"искать: golang-jwt README + RFC 8725 (best practices)"},
 {w:"Валидация и ошибки",y:"Чистый вход — меньше 500-х.",t:"Задание: required-поля + единый JSON ошибок.",h:4,hint:"искать в официальной документации: Gin Model binding или Echo Request"},
 {w:"Слой handler-service-repo",y:"Архитектура, которую ждут на ревью.",t:"Задание: разнеси CRUD на 3 слоя + pgx.",h:8,hint:"искать: Go project layout, clean architecture Go"}]}],
 mi:{t:"Milestone 4 — сервис",c:["API на Gin или Echo в 3 слоя + Postgres","Горячие чтения через Redis с инвалидацией","Все поднимается через compose одной командой"]}},
@@ -103,7 +108,8 @@ mi:{t:"Milestone 4 — сервис",c:["API на Gin или Echo в 3 слоя 
 {id:"solid",t:"SOLID и ООП в Go",m:"par",ds:"Простые модули: SRP, DI через интерфейсы, композиция.",hint:"Единой официальной доки нет — искать: SOLID Principles, Go Code Review Comments",sub:[
 {w:"SRP, OCP, DIP",y:"Маленькие интерфейсы и внедрение зависимостей.",t:"Задание: выдели UserRepo интерфейсом, внедри mock.",h:5,hint:"искать: SOLID в примерах Go"},
 {w:"Композиция вместо наследования",y:"Идиома Go вместо иерархий.",t:"Задание: переписать иерархию на встраивание.",h:4,l:["https://go.dev/doc/effective_go"]},
-{w:"Чистые функции и пакеты",y:"Пакет = ответственность; exported-минимум.",t:"Задание: разбей main на internal пакеты.",h:4,hint:"искать: Go project layout"}]},
+{w:"Чистые функции и пакеты",y:"Пакет = ответственность; exported-минимум.",t:"Задание: разбей main на internal пакеты.",h:4,hint:"искать: Go project layout"},
+{w:"log/slog",y:"Структурные логи вместо Println: уровни, поля, контекст.",t:"Задание: slog с JSON-хендлером в API + request_id из middleware.",h:3,l:["https://pkg.go.dev/log/slog"]}]},
 {id:"pat",t:"Паттерны: базовые и расширенные",m:"par",ds:"Repository, Middleware, Options, Worker Pool, Circuit Breaker.",hint:"Официальной доки нет — искать: Refactoring.Guru, Go Patterns",sub:[
 {w:"Repository + Options",y:"Доступ к данным и гибкие конструкторы.",t:"Задание: Postgres UserRepo + функциональные опции.",h:5,hint:"искать: Refactoring.Guru + Go functional options"},
 {w:"Middleware и Decorator",y:"Логи, метрики, ретраи поверх хендлеров.",t:"Задание: цепочка middleware для HTTP.",h:4,hint:"искать: Go middleware pattern"},
