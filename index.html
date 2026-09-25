@@ -17,12 +17,13 @@ body.gmode #app,body.gmode #e1,body.gmode #e0{display:none!important}
 @keyframes gpulse{0%{box-shadow:0 0 0 0 rgba(47,129,247,.55)}70%{box-shadow:0 0 0 12px rgba(47,129,247,0)}100%{box-shadow:0 0 0 0 rgba(47,129,247,0)}}
 .vtabs button{background:#1c2330;border:0;color:var(--t);padding:7px 12px;cursor:pointer;font-size:13px}
 .vtabs button.on{background:var(--a);color:#fff}
+@media (max-width:640px){body{font:14px/1.55 system-ui,Segoe UI,Roboto,Arial}.w{padding:14px 10px 60px}.w h1{font-size:22px}header{padding:8px 0}.hi{padding:0 10px;gap:8px}.pct{font-size:20px}.btn{padding:9px 12px;font-size:14px}.bar{min-width:120px}.n{margin-left:14px}.n:before{left:-14px;width:14px}.n:after{left:-14px}.d{left:-20px}.mi{margin-left:14px}.mi:before{left:-15px;width:14px}#gcv{height:70vh;min-height:380px}#ghint{display:none}#gbar{left:8px;top:8px;gap:6px;right:8px}#gbar .btn{padding:8px 10px;font-size:13px}#gside{width:100vw;max-width:100vw;border-left:0;padding-bottom:34px}.nw,.fc{font-size:12px}}
 </style></head><body>
 <header><div class="hi"><div><div style="font-size:11px;color:var(--m)">GO BACKEND ROADMAP</div><div class="pct"><span id="p">0</span>% <span id="c" style="font-size:12px;color:var(--m);font-weight:400"></span></div></div><div class="bar"><i id="b"></i></div><button class="btn" id="e1">Развернуть все</button><button class="btn" id="e0">Свернуть</button><span class="vtabs"><button class="btn on" id="vL">☰ Список</button><button class="btn" id="vG">🕸 Граф</button></span><button class="btn" id="dl">Скачать прогресс</button><button class="btn" id="ul">Загрузить прогресс</button><input type="file" id="fi" accept=".json,application/json" style="display:none"><button class="btn" id="rs" style="color:var(--r)">Сбросить</button></div><div class="hi"><div class="nw" id="nw" style="flex:1">Сейчас изучаю: —</div><div class="nw" id="sk" style="flex:1">Активность: —</div><div class="fc">Темп: <input id="pw" type="number" min="1" max="80" value="8"> ч/нед <span id="fc">—</span></div></div></header>
 <div class="w"><h1>Go Backend: карта до вакансии</h1><p style="color:var(--m);font-size:14px">Старт: учишь синтаксис Go. Всего примерно 340-430 ч + pet-проекты. <span class="tag sq">строго по порядку</span> <span class="tag pa">можно параллельно</span> — кликай по узлам, отмечай чекбоксы (все в localStorage).</p><div id="app"></div>
 <div id="gwrap"><canvas id="gcv"></canvas>
 <div id="gbar"><button class="btn" id="gfit">⤢ Вписать</button><button class="btn" id="gcur">🎯 к текущей теме</button><button class="btn" id="gstop">⏸ Пауза</button></div>
-<div id="ghint">drag узла — приколоть · drag фона — pan · колесо — zoom · клик — детали</div>
+<div id="ghint">узел: потянуть — приколоть · фон: тянуть — pan · колесо/щипок — zoom · тап — детали</div>
 <aside id="gside"></aside></div>
 <p style="color:var(--m);font-size:13px">Ссылки — только проверенные официальные. Где единой официальной доки нет — текстовая подсказка, что искать.</p></div>
 <script>const K="go-roadmap-v1",KD="go-roadmap-days",KN="go-roadmap-notes",KP="go-roadmap-pace";
@@ -270,7 +271,8 @@ g.beginPath();g.arc(N.x,N.y,N.r,0,6.2832);
 g.fillStyle=N===GSel?"#1c2942":(v==="done"?"rgba(63,185,80,.2)":(v==="learning"?"rgba(210,153,34,.22)":"#161d28"));
 g.fill();g.lineWidth=N===GSel?3:2;g.strokeStyle=gCol(v);g.stroke();
 g.fillStyle=v==="todo"?"#8b949e":"#e6edf3";
-g.font=(N.kind==="stage"?"bold 13px":(N.kind==="node"?"12px":"10px"))+" system-ui,sans-serif";
+var gSmall=0;try{gSmall=(window.innerWidth||900)<640?1:0}catch(x){}
+g.font=(N.kind==="stage"?(gSmall?"bold 14px":"bold 13px"):(N.kind==="node"?(gSmall?"13px":"12px"):(gSmall?"11px":"10px")))+" system-ui,sans-serif";
 if(N.kind!=="sub"||GCam.z>0.55)g.fillText(N.label,N.x,N.y+N.r+13)}
 g.restore()}
 function gLoop(){
@@ -294,7 +296,7 @@ function gSide(N){
 var P=document.getElementById("gside");if(!P)return;
 if(!N){P.classList.remove("on");P.innerHTML="";return}
 var v=gNStat(N),h="";
-h+="<h3>"+esc(N.label)+"</h3>"+'<div class="mut">';
+h+='<button class="btn" id="gclose2" style="float:right">✕</button><h3>'+esc(N.label)+"</h3>"+'<div class="mut">';
 if(N.kind==="stage")h+="Стадия · "+N.ref.n.length+" узла · статус: "+v;
 else if(N.kind==="node")h+=(N.par?"Параллельный узел":"Узел по порядку")+" · "+N.ref.sub.length+" подтем · "+N.ref.h+" ч · статус: "+v;
 else h+="Подтема · "+(N.hh||0)+" ч · статус: "+v;
@@ -313,8 +315,8 @@ h+='<textarea id="gnt" placeholder="Заметка…">'+esc(nt)+"</textarea>";
 }else h+='<div class="mut" style="margin-top:8px">Статус считается по подтемам.</div>';
 h+='<div class="row"><button class="btn" id="gclose">Закрыть</button></div>';
 P.innerHTML=h;P.classList.add("on");
-var c=document.getElementById("gclose");
-if(c)c.onclick=function(){GSel=null;gSide(null);gDraw()};
+var c2=["gclose","gclose2"];for(var ci2=0;ci2<c2.length;ci2++)(function(id){var cb=document.getElementById(id);if(cb)cb.onclick=function(){GSel=null;gSide(null);gDraw()}})(c2[ci2]);
+
 if(N.kind!=="sub")return;
 var bs=P.querySelectorAll("#gstat button"),i;
 for(i=0;i<bs.length;i++)(function(b){b.onclick=function(){
@@ -368,25 +370,34 @@ var GBound=false;
 function gBind(){
 if(GBound)return;GBound=true;
 try{window.addEventListener("resize",function(){if(document.body.classList.contains("gmode"))gDraw()})}catch(e){}
+var GPtrs={},GPinch=null;
+function gPtrDist(){var k=Object.keys(GPtrs);if(k.length<2)return 0;var a=GPtrs[k[0]],b=GPtrs[k[1]];var dx=a.x-b.x,dy=a.y-b.y;return Math.sqrt(dx*dx+dy*dy)||1}
 gCv.addEventListener("pointerdown",function(e){
-var p=gPos(e),N=gPick(p.x,p.y);
 try{gCv.setPointerCapture(e.pointerId)}catch(x){}
+try{GPtrs[e.pointerId]={x:e.clientX,y:e.clientY}}catch(x){}
+if(Object.keys(GPtrs).length===2){GPinch={d:gPtrDist(),z:GCam.z};if(GDrap){GDrap.n.fx=null;GDrap.n.fy=null;GDrap=null}GPan=null;return}
+var p=gPos(e),N=gPick(p.x,p.y);
 if(N){GDrap={n:N,sx:e.clientX,sy:e.clientY,mov:false};N.fx=N.x;N.fy=N.y}
 else GPan={x:e.clientX,y:e.clientY,cx:GCam.x,cy:GCam.y}});
 gCv.addEventListener("pointermove",function(e){
+if(GPtrs[e.pointerId])GPtrs[e.pointerId]={x:e.clientX,y:e.clientY};
+if(GPinch&&Object.keys(GPtrs).length>=2){var nz=GPinch.z*(gPtrDist()/GPinch.d);if(nz<0.25)nz=0.25;if(nz>3)nz=3;GCam.z=nz;gDraw();return}
 if(GDrap){var p=gPos(e);
-if(Math.abs(e.clientX-GDrap.sx)+Math.abs(e.clientY-GDrap.sy)>5)GDrap.mov=true;
+if(Math.abs(e.clientX-GDrap.sx)+Math.abs(e.clientY-GDrap.sy)>7)GDrap.mov=true;
 GDrap.n.fx=p.wx;GDrap.n.fy=p.wy;gDraw();return}
 if(GPan){GCam.x=GPan.cx+(e.clientX-GPan.x);GCam.y=GPan.cy+(e.clientY-GPan.y);gDraw();return}
 var p2=gPos(e);GHov=gPick(p2.x,p2.y);
 try{gCv.style.cursor=GHov?"pointer":"default"}catch(x){}});
 gCv.addEventListener("pointerup",function(e){
+try{delete GPtrs[e.pointerId]}catch(x){}
+if(Object.keys(GPtrs).length<2)GPinch=null;
+if(GPinch)return;
 if(GDrap){var Dp=GDrap;GDrap=null;Dp.n.fx=null;Dp.n.fy=null;
 if(!Dp.mov){GSel=Dp.n;gSide(Dp.n)}
 gDraw();return}
 if(GPan){var moved=Math.abs(e.clientX-GPan.x)+Math.abs(e.clientY-GPan.y);GPan=null;
-if(moved<4){GSel=null;gSide(null);gDraw()}}});
-gCv.addEventListener("pointercancel",function(){if(GDrap){GDrap.n.fx=null;GDrap.n.fy=null;GDrap=null}GPan=null});
+if(moved<6){GSel=null;gSide(null);gDraw()}}});
+gCv.addEventListener("pointercancel",function(e){try{if(e&&e.pointerId!==undefined)delete GPtrs[e.pointerId]}catch(x){}if(Object.keys(GPtrs).length<2)GPinch=null;if(GDrap){GDrap.n.fx=null;GDrap.n.fy=null;GDrap=null}GPan=null});
 gCv.addEventListener("wheel",function(e){
 if(e.preventDefault)e.preventDefault();
 var r=gCv.getBoundingClientRect(),W=r.width||800,H=r.height||480;
