@@ -89,7 +89,7 @@ header.min #hx{transform:rotate(180deg)}
 .bonus{background:var(--p);border:1px dashed var(--b);border-radius:14px;margin:22px 0;padding:14px 16px}
 .bonus h2{margin:0 0 6px;font-size:17px}
 .bonus li{margin:6px 0}
-@media(max-width:768px){header .hsub{display:none}header.open .hsub{display:flex}header.min .hsub{display:none!important}}
+@media(max-width:768px){header .hsub{display:none}header.open .hsub{display:flex}header.min .hsub{display:none!important}header:not(.open) #hx{transform:rotate(180deg)}}
 </style>
 </head>
 <body>
@@ -103,14 +103,14 @@ let S={};try{S=JSON.parse(localStorage.getItem(K)||"{}")}catch(e){S={}}
 for(const k in S){if(S[k]===1||S[k]===true)S[k]="done"}
 let DY=[];try{DY=JSON.parse(localStorage.getItem(KD)||"[]")}catch(e){DY=[]}
 let NT={};try{NT=JSON.parse(localStorage.getItem(KN)||"{}")}catch(e){NT={}}
-let PW=parseInt(localStorage.getItem(KP)||"8",10);if(!(PW>0))PW=8;
+let PW=8;try{PW=parseInt(localStorage.getItem(KP)||"8",10)}catch(e){PW=8}if(!(PW>0))PW=8;
 let SKIP0=false;try{SKIP0=localStorage.getItem("go-roadmap-skip0")==="1"}catch(e){SKIP0=false}
 let OPEN={};try{OPEN=JSON.parse(localStorage.getItem("go-roadmap-open")||"{}")}catch(e){OPEN={}}
-const sv=()=>localStorage.setItem(K,JSON.stringify(S));
-const svD=()=>localStorage.setItem(KD,JSON.stringify(DY));
-const svN=()=>localStorage.setItem(KN,JSON.stringify(NT));
-const svP=()=>localStorage.setItem(KP,String(PW));
-const svO=()=>localStorage.setItem("go-roadmap-open",JSON.stringify(OPEN));
+const sv=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const svD=()=>{try{localStorage.setItem(KD,JSON.stringify(DY))}catch(e){}};
+const svN=()=>{try{localStorage.setItem(KN,JSON.stringify(NT))}catch(e){}};
+const svP=()=>{try{localStorage.setItem(KP,String(PW))}catch(e){}};
+const svO=()=>{try{localStorage.setItem("go-roadmap-open",JSON.stringify(OPEN))}catch(e){}};
 const svS0=()=>{try{localStorage.setItem("go-roadmap-skip0",SKIP0?"1":"0")}catch(e){}};
 const skey=(nd,sb)=>nd.id+":"+(sb.id!=null?sb.id:"");
 const st=k=>(S[k]==="done"||S[k]==="learning"||S[k]==="todo")?S[k]:(S[k]?"done":"todo");
@@ -155,7 +155,8 @@ mi:{t:"Milestone 1 — Go-база",c:["CLI и HTTP на stdlib без подс�
 {id:"rest",t:"REST API (база)",m:"par",ds:"Ресурсы, JSON, статусы, идемпотентность. REST это дизайн API поверх HTTP-протокола, не сам протокол.",hint:"Спец. официальной REST-доки нет — искать: REST API Tutorial, RFC 9110",sub:[
 {w:"Ресурсы и маршруты",y:"Проектирование users-id вместо getUser.",t:"Задание: опиши таблицу 5 endpoints CRUD users и orders: метод + путь + статус.",h:4,hint:"искать: REST API Tutorial (restapitutorial.com)",x:"REST API Tutorial: ресурсы и именование"},
 {w:"JSON, статусы, ошибки",y:"Единый формат ошибок решает боль фронта.",t:"Задание: CRUD на stdlib с единым JSON ошибок.",h:6,l:["https://pkg.go.dev/encoding/json"],x:"JSON API: формат ошибок + статусы"},
-{w:"Query, пагинация, фильтры",y:"Без limit и offset API ляжет на больших таблицах.",t:"Задание: items с page, limit и sort.",h:4,hint:"искать: JSON API pagination"}],x:"JSON API: пагинация limit-offset"},
+{w:"Query, пагинация, фильтры",y:"Без limit и offset API ляжет на больших таблицах.",t:"Задание: items с page, limit и sort.",h:4,hint:"искать: JSON API pagination"},
+{w:"OpenAPI и Swagger",y:"Контракт API читают фронт, QA и Postman без вопросов в чат.",t:"Задание: опиши 3 эндпоинта users в OpenAPI 3.0 (YAML), провалидируй в Swagger Editor.",h:4,hint:"искать: OpenAPI Specification (spec.openapis.org), Swagger Editor"}],x:"JSON API: пагинация limit-offset"},
 {id:"conc",t:"Concurrency: goroutines, channels",m:"seq",ds:"Главное преимущество Go: горутины, каналы, select, sync. Ошибки тут = гонки.",docs:["https://go.dev/tour/concurrency/1","https://go.dev/doc/effective_go"],sub:[
 {w:"Goroutines + WaitGroup",y:"Параллельные задачи без потоков ОС.",t:"Задание: скачать 5 URL параллельно через WaitGroup.",h:6,l:["https://go.dev/tour/concurrency/1"],x:"Go blog: Share Memory By Communicating (офиц. блог Go)"},
 {w:"Channels + select",y:"Обмен данными и таймауты.",t:"Задание: worker pool на 3 воркера + select с timeout.",h:8,l:["https://go.dev/tour/concurrency/2"],x:"Go by Example: каналы, select, таймауты, worker pools"},
@@ -190,13 +191,15 @@ mi:{t:"Milestone 3 — данные",c:["Схема users-orders с FK и инд
 {w:"Роуты, параметры, JSON",y:"Скелет любого API.",t:"Задание: CRUD users на Gin или Echo.",h:5,hint:"искать в официальной документации: Gin Quick Start или Echo Guide"},
 {w:"Middleware: лог, auth, CORS",y:"Сквозная логика без дублей.",t:"Задание: middleware лога + проверка токена.",h:4,hint:"искать в официальной документации: Gin Middleware или Echo Middleware"},
 {w:"Валидация и ошибки",y:"Чистый вход — меньше 500-х.",t:"Задание: required-поля + единый JSON ошибок.",h:4,hint:"искать в официальной документации: Gin Model binding или Echo Request"},
-{w:"Слой handler-service-repo",y:"Архитектура, которую ждут на ревью.",t:"Задание: разнеси CRUD на 3 слоя + pgx.",h:8,hint:"искать: Go project layout, clean architecture Go"}]},
+{w:"Слой handler-service-repo",y:"Архитектура, которую ждут на ревью.",t:"Задание: разнеси CRUD на 3 слоя + pgx.",h:8,hint:"искать: Go project layout, clean architecture Go"},
+{w:"Тесты хендлеров: httptest + mock-репозиторий",y:"Юнит-тест без реальной БД: репозиторий подменяется интерфейсом.",t:"Задание: протестируй CRUD-хендлер через httptest.NewRequest с mock UserRepo (testify/mock или ручной stub).",h:5,hint:"искать: net/http/httptest docs, testify/mock"}]},
 {id:"observability",t:"Observability basics",m:"par",ds:"Structured logging, health-checks и базовые метрики.",docs:["https://pkg.go.dev/log/slog"],sub:[
 {id:"slog-id",w:"Structured logging (slog) + request ID",y:"JSON-логи вместо Println; request_id через context.",t:"Задание: slog JSON + middleware request_id.",h:2},
 {id:"healthz",w:"/healthz и /readyz",y:"Оркестратор знает жив ли сервис.",t:"Задание: добавь /healthz и /readyz с проверкой БД.",h:1.5},
 {id:"latency",w:"Latency-метрика хендлера",y:"Видеть тормоза без Prometheus.",t:"Задание: middleware логирует latency в JSON.",h:2}]},
 {id:"security-basics",t:"Security basics",m:"seq",ds:"Минимум для прода. SQL-инъекции закрыты параметризованными запросами pgx по умолчанию.",sub:[
 {id:"pwd-hash",w:"Password hashing bcrypt",y:"Пароль нельзя хранить открыто.",t:"Задание: регистрация хеширует bcrypt, логин сверяет.",h:2},
+{id:"jwt",w:"JWT: access-токен и claims",y:"Токен для аутентификации между запросами без сессии на сервере.",t:"Задание: выдай JWT (HS256) при логине, проверь подпись и exp в middleware auth.",h:3},
 {id:"rate-limit",w:"Rate limiting на IP",y:"Защита от брутфорса.",t:"Задание: middleware лимит запросов с IP в минуту.",h:2},
 {id:"refresh-rotation",w:"Refresh rotation и revocation",y:"Ротация и отзыв токенов.",t:"Задание: инвалидация старого refresh + logout blacklist.",h:1.5},
 {id:"secrets",w:"Secrets .env в прод",y:"Секреты не в коде.",t:"Задание: .env для dev + env vars для прода.",h:1.5}]},
@@ -226,8 +229,8 @@ mi:{t:"Milestone 5 — зрелость",c:["Код по слоям, завис�
 {w:"Стриминг + deadline",y:"Server-streaming и отмены — сила gRPC.",t:"Задание: ListUsers стримом + deadline.",h:5,l:["https://grpc.io/docs/languages/go/basics/"],x:"gRPC docs: стриминг и deadlines"},
 {w:"gRPC + REST рядом",y:"Часто оба: gRPC внутри, REST наружу.",t:"Задание: REST-хендлер, дергающий gRPC.",h:5,l:["https://grpc.io/docs/languages/go/"]}],x:"grpc-gateway README: REST поверх gRPC"},
 {id:"pets",t:"Pet-проекты на GitHub",m:"seq",ds:"Доказательство навыков: README, compose, миграции, тесты, CI.",hint:"Официальная дока: GitHub Docs (README, Actions)",sub:[
-{w:"Проект 1: Task API (REST)",y:"Визитка: Gin-Echo + Postgres + Redis + Docker.",t:"Задание: CRUD, миграции, кэш, README, тесты.",h:30,hint:"искать в официальной документации: GitHub README и Actions",x:"GitHub docs: README + Actions для Go"},
-{w:"Проект 2: gRPC-сервис",y:"Закрывает требование gRPC из вакансии.",t:"Задание: users-service + REST-gateway + compose.",h:20,l:["https://grpc.io/docs/languages/go/"],x:"gRPC Examples: helloworld + route-guide на Go"},
+{w:"Проект 1: Task API (REST)",y:"Визитка: Gin-Echo + Postgres + Redis + Docker.",t:"Задание: CRUD, миграции, кэш, README, тесты + минимум 1 интеграционный тест на testcontainers-go.",h:36,hint:"искать в официальной документации: GitHub README и Actions",x:"GitHub docs: README + Actions для Go"},
+{w:"Проект 2: gRPC-сервис",y:"Закрывает требование gRPC из вакансии.",t:"Задание: users-service + REST-gateway + compose.",h:24,l:["https://grpc.io/docs/languages/go/"],x:"gRPC Examples: helloworld + route-guide на Go"},
 {w:"Оформление и CI",y:"Ревью смотрят на гигиену.",t:"Задание: README, go vet, golangci, Actions.",h:8,l:["https://go.dev/doc/"]}]}],
 mi:{t:"Финиш — готов к вакансии",c:["2 репо с README и запуском через compose","gRPC-сервис с proto и стримингом","Рассказываешь про JOIN, Redis, goroutines на своем коде"]}}];
 
@@ -242,7 +245,8 @@ const BONUS=[
 {t:"Message queues",n:"Kafka / NATS / RabbitMQ, если работа предполагает event-driven архитектуру."},
 {t:"Observability на проде",n:"Prometheus + Grafana + OpenTelemetry."},
 {t:"Деплой",n:"VPS + systemd, или PaaS (Fly.io, Railway) — как сервис реально попадает в интернет."},
-{t:"Kubernetes",n:"Если следующий шаг — платформенная инженерия, а не чисто backend."}];
+{t:"Kubernetes",n:"Если следующий шаг — платформенная инженерия, а не чисто backend."},
+{t:"Алгоритмы Medium + System Design",n:"Когда Easy станет рутиной: LeetCode Medium и основы System Design для собесов в компании покрупнее."}];
 
 function render(){const ap=document.getElementById("app");if(!ap)return;const scY=window.scrollY||0;
 try{ap.querySelectorAll(".n.op").forEach(x=>{OPEN[x.id]=1})}catch(e){}
@@ -260,7 +264,7 @@ if(nd.docs)h+='<div class="mt">Docs: '+links(nd.docs)+"</div>";
 if(nd.hint)h+='<div class="hn">'+esc(nd.hint)+"</div>";
 h+="</div><span class='np"+(pc===100?" dn":"")+"'>"+sdn+"/"+subs+" | "+pc+"%</span></div><div class='nb'>";
 nd.sub.forEach((s2,i)=>{const k=skey(nd,s2);const v=st(k);
-h+='<div class="s'+(v==="done"?" dn":"")+'"><div class="st2"><button class="stt '+v+'" data-k="'+k+'" title="'+v+' (клик — сменить статус)"></button><div style="flex:1"><div style="font-weight:650">'+esc(s2.w)+' <span class="tag">~'+s2.h+' ч</span> <span class="tag '+(v==="done"?"pa":(v==="learning"?"sq":""))+'">'+v+'</span></div><div style="font-size:13px">'+esc(s2.y)+'</div><div class="tk">'+esc(s2.t)+"</div>";
+h+='<div class="s'+(v==="done"?" dn":"")+'"><div class="st2"><button class="stt '+v+'" data-k="'+k+'" title="'+v+' (клик — сменить статус)" aria-label="'+esc(s2.w)+': '+v+', клик — сменить статус"></button><div style="flex:1"><div style="font-weight:650">'+esc(s2.w)+' <span class="tag">~'+s2.h+' ч</span> <span class="tag '+(v==="done"?"pa":(v==="learning"?"sq":""))+'">'+v+'</span></div><div style="font-size:13px">'+esc(s2.y)+'</div><div class="tk">'+esc(s2.t)+"</div>";
 if(s2.l)h+='<div class="mt">Docs: '+links(s2.l)+"</div>";
 if(s2.hint)h+='<div class="hn">'+esc(s2.hint)+"</div>";
 if(s2.x)h+='<div class="x2">Дополнительно: '+esc(s2.x)+"</div>";
@@ -283,7 +287,7 @@ let miTxt="все milestone закрыты 🎉";
 for(const sg of D){if(SKIP0&&sg.optional)continue;let need=0,hrs=0;
 sg.n.forEach(nd=>{nd.sub.forEach((s2,i)=>{if(st(skey(nd,s2))!=="done"){need++;hrs+=s2.h}})});
 if(need>0){miTxt=sg.mi.t+": осталось "+need+" подтем (~"+hrs+" ч) → "+fcast(hrs);break}}
-document.getElementById("fc").textContent="Финиш карты: "+fcast(hrsLeft)+" · "+miTxt;
+document.getElementById("fc").textContent="Финиш карты: "+(tot&&dn===tot?"пройден 🎉":fcast(hrsLeft))+" · "+miTxt;
 const pwEl=document.getElementById("pw");if(document.activeElement!==pwEl)pwEl.value=PW;
 ap.querySelectorAll(".nh").forEach(e=>e.onclick=ev=>{if(ev.target.tagName==="A"||ev.target.tagName==="INPUT"||ev.target.tagName==="BUTTON"||ev.target.tagName==="TEXTAREA")return;
 var nn=document.getElementById("n-"+e.dataset.id);nn.classList.toggle("op");
@@ -293,7 +297,7 @@ ap.querySelectorAll(".stt").forEach(e=>e.onclick=ev=>{ev.stopPropagation();const
 const nx=cur==="todo"?"learning":(cur==="learning"?"done":"todo");
 if(nx==="todo")delete S[k];else S[k]=nx;
 if(nx!=="todo")markDay();sv();render()});
-ap.querySelectorAll(".sbt").forEach(e=>e.onclick=ev=>{ev.stopPropagation();const t=ap.querySelector('textarea[data-t="'+e.dataset.n+'"]');if(t)t.style.display=(t.style.display==="none"?"block":"none")});
+ap.querySelectorAll(".sbt").forEach(e=>e.onclick=ev=>{ev.stopPropagation();const t=ap.querySelector('textarea[data-t="'+e.dataset.n+'"]');if(t){const show=t.style.display==="none";t.style.display=show?"block":"none";if(show)t.focus()}});
 ap.querySelectorAll(".nta").forEach(e=>e.oninput=()=>{const k=e.dataset.t;if(e.value)NT[k]=e.value;else delete NT[k];svN();
 const b=ap.querySelector('button[data-n="'+k+'"]');if(b)b.classList.toggle("has",!!e.value)});
 var b0=document.getElementById("bonus");if(b0)b0.remove();
@@ -301,7 +305,7 @@ var bd=document.createElement("div");bd.id="bonus";bd.className="bonus";
 bd.innerHTML="<h2>Дальше (не входит в прогресс)</h2><ul>"+BONUS.map(x=>"<li><b>"+esc(x.t)+"</b> — "+esc(x.n)+"</li>").join("")+"</ul>";
 ap.appendChild(bd);
 var s0b=document.getElementById("s0show");if(s0b)s0b.onclick=()=>{SKIP0=false;svS0();var c=document.getElementById("s0");if(c)c.checked=false;GV.built=false;GV.nodes=[];GV.edges=[];gBuild();render()};
-window.scrollTo(0,scY);updateHd()}
+window.scrollTo(0,scY)}
 
 document.getElementById("e1").onclick=()=>{document.querySelectorAll(".n").forEach(x=>{x.classList.add("op");OPEN[x.id]=1});try{localStorage.setItem("go-roadmap-open",JSON.stringify(OPEN))}catch(e){}};
 document.getElementById("e0").onclick=()=>{document.querySelectorAll(".n").forEach(x=>{x.classList.remove("op")});OPEN={};try{localStorage.setItem("go-roadmap-open","{}")}catch(e){}};
@@ -311,7 +315,7 @@ document.getElementById("pw").value=PW;
 document.getElementById("s0").checked=!!SKIP0;
 document.getElementById("s0").onchange=e=>{SKIP0=!!e.target.checked;svS0();GV.built=false;GV.nodes=[];GV.edges=[];if(document.body.classList.contains("gmode"))gBuild();render()};
 document.getElementById("hx").onclick=()=>{var hd=document.querySelector("header");var narrow=false;try{narrow=window.matchMedia("(max-width: 768px)").matches}catch(e){}
-if(narrow){hd.classList.toggle("open")}else{hd.classList.toggle("min")}updateHd()};
+if(narrow){hd.classList.toggle("open")}else{hd.classList.toggle("min")}};
 try{if(window.matchMedia("(max-width: 768px)").matches)document.querySelector("header").classList.remove("open")}catch(e){}
 document.getElementById("dl").onclick=()=>{const data={v:3,status:S,days:DY,notes:NT,pace:PW,skip0:SKIP0};
 const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");
@@ -347,6 +351,7 @@ return gAgg("stage",n.id)}
 function gBuild(){if(GV.built)return;GV.built=true;
 function h32(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0}return (h>>>0)/4294967295}
 for(var si=0;si<D.length;si++){var sg=D[si];
+if(SKIP0&&sg.optional)continue;
 var ang=-1.5708+si*6.2832/D.length;
 var sx=Math.cos(ang)*400+(h32("Sx"+si)-0.5)*70;
 var sy=Math.sin(ang)*290+(h32("Sy"+si)-0.5)*70;
@@ -595,6 +600,7 @@ cv.addEventListener("touchend",function(ev){ev.preventDefault();
 if(GV.drag){if(GV.drag.moved<8)gSide(GV.drag.n);GV.drag=null}
 else if(GV.pan){if(GV.pan.moved<8)gSide(null);GV.pan=null}
 if(ev.touches.length<2)GV.pinch=null;gDraw()},{passive:false})})();
+window.addEventListener("resize",function(){if(document.body.classList.contains("gmode"))gDraw()});
 
 function gFit(){if(!GV.nodes.length)return;
 var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
@@ -630,9 +636,6 @@ document.getElementById("vG").classList.toggle("on",g);
 if(g){gBuild();if(!GV.fitted){GV.fitted=true;gFit()}gLoop()}}
 document.getElementById("vL").onclick=function(){setView(false)};
 document.getElementById("vG").onclick=function(){setView(true)};
-
-function updateHd(){var hd=document.querySelector("header");if(!hd)return;
-var x=document.getElementById("hx");if(x)x.textContent=hd.classList.contains("min")?"▼":"▲"}
 
 render();
 </script>
