@@ -119,11 +119,11 @@ function markDay(){const t=today();if(!DY.includes(t)){DY.push(t);DY.sort();svD(
 
 const D=[
 {s:"0. Абсолютный ноль",optional:true,d:"Языково-нейтральный минимум для человека с нулевым опытом программирования — до того, как встретишь это на Go в блоке 1.",n:[
-{id:"zero-basics",t:"Компьютер и код: самые основы",m:"seq",sub:[
+{id:"zero-basics",t:"Компьютер и код: самые основы",m:"seq",ds:"Как компьютер выполняет код и с чем работать в терминале — до первой строчки на Go.",sub:[
 {id:"0",w:"Что такое программа и как компьютер её выполняет",y:"На пальцах, без языка.",t:"Задание: своими словами объясни другу, что происходит, когда ты запускаешь любую программу.",h:2},
 {id:"1",w:"Компилятор vs интерпретатор",y:"Что происходит, когда запускаешь код.",t:"Задание: опиши разницу на примере запуска своей первой Go-программы.",h:2},
 {id:"2",w:"Терминал: базовые команды и пути",y:"cd, ls, mkdir, запуск программы; относительные и абсолютные пути.",t:"Задание: создай папку через терминал, перейди в неё, запусти файл.",h:3}]},
-{id:"zero-project",t:"Первый файл и первая ошибка",m:"seq",sub:[
+{id:"zero-project",t:"Первый файл и первая ошибка",m:"seq",ds:"Первый рабочий файл, первая осмысленная ошибка компилятора и первый коммит в Git.",sub:[
 {id:"0",w:"Файл .go и структура простого проекта",y:"main.go, package main, func main.",t:"Задание: создай minimal main.go и запусти его.",h:3},
 {id:"1",w:"Как читать ошибку компилятора",y:"Не бояться красного текста.",t:"Задание: намеренно сломай код 3 способами, разбери каждую ошибку.",h:3},
 {id:"2",w:"Git: репозиторий, commit, push",y:"Что такое репозиторий и зачем он нужен.",t:"Задание: создай репозиторий, сделай первый коммит и запушь на GitHub",h:4}]}],
@@ -232,7 +232,7 @@ mi:{t:"Milestone 5 — зрелость",c:["Код по слоям, завис�
 mi:{t:"Финиш — готов к вакансии",c:["2 репо с README и запуском через compose","gRPC-сервис с proto и стримингом","Рассказываешь про JOIN, Redis, goroutines на своем коде"]}}];
 
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
-function links(a){if(!a||!a.length)return"";return a.map(u=>'<a href="'+u+'" target="_blank" rel="noopener">'+esc(u.replace("https://","").slice(0,44))+"</a>").join(" | ")}
+function links(a){if(!a||!a.length)return"";return a.map(u=>{var st=u.replace("https://","");var sh=st.length>44?st.slice(0,44)+"…":st;return '<a href="'+u+'" target="_blank" rel="noopener">'+esc(sh)+"</a>"}).join(" | ")}
 function streak(){if(!DY.length)return 0;const set=new Set(DY);let s=0;const d=new Date();if(!set.has(today()))d.setDate(d.getDate()-1);while(true){const k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");if(set.has(k)){s++;d.setDate(d.getDate()-1)}else break}return s}
 function lastAct(){if(!DY.length)return"нет активности";const t=today();const last=DY[DY.length-1];const ms=(new Date(t)-new Date(last))/864e5;if(ms<=0)return"сегодня";if(ms<=1)return"вчера";return Math.round(ms)+" дн. назад"}
 function fmtDate(dt){return dt.toISOString().slice(0,10)}
