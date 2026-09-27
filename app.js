@@ -1,7 +1,8 @@
 "use strict";
 // ---------- хранилище ----------
 const K = {st:"go-roadmap-v1", days:"go-roadmap-days", notes:"go-roadmap-notes", pace:"go-roadmap-pace", open:"go-roadmap-open",
-  quiz:"go-roadmap-quiz", ck:"go-roadmap-ck", theme:"go-roadmap-theme", view:"go-roadmap-view"};
+  quiz:"go-roadmap-quiz", ck:"go-roadmap-ck", theme:"go-roadmap-theme", view:"go-roadmap-view",
+  oldChk:"go-roadmap-chk", skip0:"go-roadmap-skip0", hideDone:"go-roadmap-hd"};
 const ls = {
   get(k, def){ try{ const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v) }catch(e){ return def } },
   raw(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
@@ -9,6 +10,7 @@ const ls = {
 };
 let S = ls.get(K.st, {}), DY = ls.get(K.days, []), NT = ls.get(K.notes, {}), QZ = ls.get(K.quiz, {}), CK = ls.get(K.ck, {}), OPEN = ls.get(K.open, {});
 let PW = parseInt(ls.raw(K.pace) || "8", 10); if(!(PW > 0)) PW = 8;
+let SKIP0 = ls.raw(K.skip0) === "1";
 if(!S || typeof S !== "object") S = {}; if(!Array.isArray(DY)) DY = []; if(!NT || typeof NT !== "object") NT = {};
 const save = {
   st(){ ls.set(K.st, S) }, days(){ ls.set(K.days, DY) }, notes(){ ls.set(K.notes, NT) }, quiz(){ ls.set(K.quiz, QZ) },
@@ -32,7 +34,17 @@ function migrate(){
     if(nk && NT[k]) NT[nk] = NT[nk] ? NT[nk] + "\n\n" + NT[k] : NT[k];
     delete NT[k]; changed = true;
   }
-  if(changed){ save.st(); save.notes() }
+  // отметки «Умеешь» прошлой версии: "узел:подтема:cN" → CK["узел.подтема#sc"]
+  const old = ls.get(K.oldChk, null);
+  if(old && typeof old === "object"){
+    for(const ck of Object.keys(old)){
+      const m = /^(.*):c(\d+)$/.exec(ck), map = m && CHMAP[m[1]];
+      if(!map || !old[ck]) continue;
+      const key = map[0] + "#sc", i = map[1] + +m[2], arr = CK[key] || [];
+      if(!arr.includes(i)){ arr.push(i); arr.sort((a, b) => a - b); CK[key] = arr; changed = true }
+    }
+  }
+  if(changed){ save.st(); save.notes(); save.ck() }
 }
 migrate();
 
@@ -94,13 +106,14 @@ function rng(seed){ let h = 2166136261; for(let i = 0; i < seed.length; i++){ h 
 function stats(){
   const r = {tot:0, dn:0, hrsLeft:0, hrsAll:0, stages:[], nodes:{}, learning:[]};
   D.forEach((sg, si) => {
-    const s = {tot:0, dn:0, hrs:0};
+    const s = {tot:0, dn:0, hrs:0}, skip = si === 0 && SKIP0;
     sg.n.forEach(nd => {
       const n = {tot:0, dn:0, lr:0};
       nd.sub.forEach(sb => {
         const k = nd.id + "." + sb.id, v = st(k);
-        n.tot++; s.tot++; r.tot++; r.hrsAll += sb.h;
-        if(v === "done"){ n.dn++; s.dn++; r.dn++ } else { s.hrs += sb.h; r.hrsLeft += sb.h }
+        n.tot++; s.tot++;
+        if(v === "done"){ n.dn++; s.dn++ } else s.hrs += sb.h;
+        if(!skip){ r.tot++; r.hrsAll += sb.h; if(v === "done") r.dn++; else r.hrsLeft += sb.h }
         if(v === "learning"){ n.lr++; r.learning.push(BYKEY[k]) }
       });
       r.nodes[nd.id] = n;
@@ -136,6 +149,7 @@ function subHTML(r){
   if(sb.v) meta += "<span>" + I("play") + sb.v.length + "</span>";
   if(sb.q) meta += '<span class="qb' + (q ? (q.s === q.n ? " ok" : " part") : "") + '">' + I("quiz") + (q ? "тест " + q.s + "/" + q.n : "тест") + "</span>";
   if(sb.ck){ const c = (CK[k] || []).length; meta += '<span class="qb' + (c ? (c === sb.ck.length ? " ok" : " part") : "") + '">' + I("check") + c + "/" + sb.ck.length + "</span>" }
+  if(sb.sc){ const c = (CK[k + "#sc"] || []).length; meta += '<span class="qb' + (c ? (c === sb.sc.length ? " ok" : " part") : "") + '">' + I("check") + "умеешь " + c + "/" + sb.sc.length + "</span>" }
   if(NT[k]) meta += "<span>" + I("edit") + "заметка</span>";
   return '<div class="sub st-' + v + '" id="s-' + k + '" data-k="' + k + '"><div class="sub-h">' +
     '<button class="stt" data-act="cycle" title="' + TXT[v] + ' — нажми, чтобы сменить" aria-label="Статус: ' + TXT[v] + '"></button>' +
@@ -147,7 +161,9 @@ function lnkList(arr){
 }
 function subBody(r){
   const {k, sb} = r, v = st(k);
-  let h = '<p class="why">' + rich(sb.y) + '</p><div class="task"><b>Задание</b>' + rich(sb.t) + "</div>";
+  let h = '<p class="why">' + rich(sb.y) + "</p>";
+  if(sb.kc) h += '<div class="kc"><b>Суть</b>' + sb.kc.map(c => '<div class="kc-row">' + c.split("→").map(x => "<span>" + rich(x.trim()) + "</span>").join('<i aria-hidden="true">→</i>') + "</div>").join("") + "</div>";
+  h += '<div class="task"><b>Задание</b>' + rich(sb.t) + "</div>";
   h += '<div class="st-seg">' + ["todo", "learning", "done"].map(x => '<button data-act="set" data-v="' + x + '" class="' + (v === x ? "on" : "") + '"><span class="stt ' + x + '" style="width:14px;height:14px;border-width:2px;pointer-events:none"></span>' + TXT[x] + "</button>").join("") + "</div>";
   h += '<div class="res">';
   if(sb.a) h += '<div class="res-g"><h5>' + I("doc") + "Статьи</h5>" + lnkList(sb.a) + "</div>";
@@ -156,6 +172,10 @@ function subBody(r){
   if(sb.v) h += '<div class="res-g vids"><h5>' + I("play") + 'Видео</h5><div class="vgrid">' + sb.v.map(x =>
     '<div><button class="vid" data-act="video" data-yt="' + esc(x[0]) + '"><span class="thumb"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + esc(x[0]) + '/mqdefault.jpg"><span class="play">' + I("play") + '</span><span class="dur">' + esc(x[3]) + '</span></span><span><span class="vt">' + esc(x[1]) + (x[4] === "en" ? '<span class="en">EN</span>' : "") + '</span><span class="vc">' + esc(x[2]) + "</span></span></button></div>").join("") + "</div></div>";
   h += "</div>";
+  if(sb.sc){
+    const done = CK[k + "#sc"] || [];
+    h += '<div class="ck"><div class="quiz-h">' + I("target") + 'Умеешь<span class="mut">отметь, что уже получается</span></div>' + sb.sc.map((c, i) => '<label><input type="checkbox" data-act="sc" data-i="' + i + '"' + (done.includes(i) ? " checked" : "") + "><span>" + esc(c) + "</span></label>").join("") + "</div>";
+  }
   if(sb.q) h += quizHTML(r);
   if(sb.ck){
     const done = CK[k] || [];
@@ -175,26 +195,31 @@ function quizHTML(r){
   });
   return h + '</ol><div class="quiz-f"><button class="btn primary" data-act="qcheck">Проверить</button><button class="btn ghost" data-act="qreset">Сбросить ответы</button><span class="quiz-res"></span></div></div>';
 }
+const NDT = {}; D.forEach(sg => sg.n.forEach(nd => NDT[nd.id] = nd.t));
 function renderApp(){
-  const r = stats();
   let h = "";
   D.forEach((sg, si) => {
-    const s = r.stages[si];
-    h += '<section class="stage" id="stage-' + si + '" data-si="' + si + '"><div class="stage-h"><div class="stage-num">' + String(si + 1).padStart(2, "0") + '</div><div style="flex:1;min-width:0"><h2>' + esc(sg.s) + "</h2><p>" + esc(sg.d) + '</p><div class="stage-prog"><div class="bar"><i data-sbar="' + si + '"></i></div><span data-stxt="' + si + '"></span></div></div></div><div class="nodes">';
+    const skip = si === 0 && SKIP0;
+    h += '<section class="stage' + (skip ? " skipped" : "") + '" id="stage-' + si + '" data-si="' + si + '"><div class="stage-h"><div class="stage-num">' + String(si).padStart(2, "0") + '</div><div style="flex:1;min-width:0"><h2>' + esc(sg.s) + "</h2><p>" + esc(sg.d) + '</p><div class="stage-prog"><div class="bar"><i data-sbar="' + si + '"></i></div><span data-stxt="' + si + '"></span></div>';
+    if(si === 0) h += '<button class="btn sm skip-btn" data-act="skip0">' + (skip ? "Вернуть этап 0 в карту" : "У меня есть опыт — пропустить этап") + "</button>";
+    h += '</div></div><div class="nodes">';
     sg.n.forEach(nd => {
-      h += '<div class="node' + (OPEN["n-" + nd.id] ? " op" : "") + '" id="n-' + nd.id + '" data-nid="' + nd.id + '"><div class="node-h" data-act="node"><div class="node-main"><span class="tag ' + nd.m + '">' + (nd.m === "seq" ? "по порядку" : "можно параллельно") + '</span><div class="node-t">' + esc(nd.t) + '</div><div class="node-d">' + esc(nd.ds) + '</div></div><span class="pill" data-npill="' + nd.id + '"></span><button class="chev" aria-label="Развернуть">' + I("chev") + '</button></div><div class="node-b">';
+      h += '<div class="node' + (OPEN["n-" + nd.id] ? " op" : "") + '" id="n-' + nd.id + '" data-nid="' + nd.id + '"><div class="node-h" data-act="node"><div class="node-main"><span class="tag ' + nd.m + '">' + (nd.m === "seq" ? "по порядку" : "можно параллельно") + '</span><div class="node-t">' + esc(nd.t) + '</div><div class="node-d">' + esc(nd.ds) + "</div>" +
+        (nd.req ? '<div class="req">Нужны до: ' + nd.req.map(x => esc(NDT[x] || x)).join(" · ") + "</div>" : "") +
+        '</div><span class="pill" data-npill="' + nd.id + '"></span><button class="chev" aria-label="Развернуть">' + I("chev") + '</button></div><div class="node-b">';
       nd.sub.forEach(sb => { h += subHTML(BYKEY[nd.id + "." + sb.id]) });
       h += "</div></div>";
     });
     if(sg.mi) h += '<div class="mile"><h3>' + I("flag") + esc(sg.mi.t) + "</h3><ul>" + sg.mi.c.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>";
     h += "</div></section>";
   });
+  if(typeof NEXT !== "undefined") h += '<section class="next" id="next"><h2>' + I("flag") + "Когда карта пройдена</h2><p class=mut>Не обязательно для первой работы — выбирай по вакансиям, которые нравятся.</p><div class=\"next-grid\">" + NEXT.map(x => '<div class="card"><b>' + esc(x[0]) + "</b><div class=mut>" + esc(x[1]) + "</div></div>").join("") + "</div></section>";
   h += '<div class="nores" id="nores" hidden>Ничего не найдено. Попробуй другой запрос или сбрось фильтр.</div>';
   $("#app").innerHTML = h;
   let nav = "", chips = "";
   D.forEach((sg, si) => {
-    nav += '<a href="#stage-' + si + '" data-nav="' + si + '"><div class="sn-t"><span class="sn-n">' + String(si + 1).padStart(2, "0") + "</span>" + esc(sg.s) + '</div><div class="sn-p"><div class="bar"><i data-nbar="' + si + '"></i></div><span data-ntxt="' + si + '"></span></div></a>';
-    chips += '<a href="#stage-' + si + '">' + (si + 1) + ". " + esc(sg.s) + '<small data-ctxt="' + si + '"></small></a>';
+    nav += '<a href="#stage-' + si + '" data-nav="' + si + '"><div class="sn-t"><span class="sn-n">' + String(si).padStart(2, "0") + "</span>" + esc(sg.s) + '</div><div class="sn-p"><div class="bar"><i data-nbar="' + si + '"></i></div><span data-ntxt="' + si + '"></span></div></a>';
+    chips += '<a href="#stage-' + si + '">' + si + ". " + esc(sg.s) + '<small data-ctxt="' + si + '"></small></a>';
   });
   $("#snav").innerHTML = nav; $("#stageChips").innerHTML = chips;
   updateStats();
@@ -206,9 +231,10 @@ function updateStats(){
   r.stages.forEach((s, si) => {
     const sp = pct(s.dn, s.tot);
     $$('[data-sbar="' + si + '"],[data-nbar="' + si + '"]').forEach(e => e.style.width = sp + "%");
-    const t = $('[data-stxt="' + si + '"]'); if(t) t.textContent = s.dn + " из " + s.tot + " · " + sp + "%" + (s.hrs ? " · осталось ~" + s.hrs + " ч" : " · пройдено");
-    const n = $('[data-ntxt="' + si + '"]'); if(n) n.textContent = sp + "%";
-    const c = $('[data-ctxt="' + si + '"]'); if(c) c.textContent = sp + "%";
+    const skip = si === 0 && SKIP0;
+    const t = $('[data-stxt="' + si + '"]'); if(t) t.textContent = skip ? "пропущен — не входит в прогресс и прогноз" : s.dn + " из " + s.tot + " · " + sp + "%" + (s.hrs ? " · осталось ~" + s.hrs + " ч" : " · пройдено");
+    const n = $('[data-ntxt="' + si + '"]'); if(n) n.textContent = skip ? "пропущен" : sp + "%";
+    const c = $('[data-ctxt="' + si + '"]'); if(c) c.textContent = skip ? "—" : sp + "%";
   });
   for(const id in r.nodes){
     const n = r.nodes[id], el = $('[data-npill="' + id + '"]'); if(!el) continue;
@@ -228,11 +254,14 @@ function updateStats(){
   const f = forecast(r.hrsLeft);
   $("#fcAll").innerHTML = f ? "Финиш карты: <b>" + f.date + "</b> <span class=mut>(~" + f.w + " нед.)</span>" : "Карта пройдена 🎉";
   let mi = "Все milestone закрыты";
-  for(let si = 0; si < D.length; si++){
+  for(let si = SKIP0 ? 1 : 0; si < D.length; si++){
     const s = r.stages[si];
     if(s.dn < s.tot){ const ff = forecast(s.hrs); mi = esc(D[si].mi.t) + ": осталось " + (s.tot - s.dn) + " " + plural(s.tot - s.dn, "подтема", "подтемы", "подтем") + " (~" + s.hrs + " ч)" + (ff ? " → <b>" + ff.date + "</b>" : ""); break }
   }
   $("#fcMile").innerHTML = mi;
+  // пора откликаться: пройден этап «Сервис» и первый pet-проект
+  const svc = r.stages[4], ready = svc && svc.dn === svc.tot && st("pets.p1") === "done";
+  $("#applyHint").hidden = !ready || D[D.length - 1].n.find(n => n.id === "job").sub.every(sb => st("job." + sb.id) === "done");
   const pw = $("#pw"); if(document.activeElement !== pw) pw.value = PW;
   if(window.gRefresh) window.gRefresh();
 }
@@ -306,6 +335,7 @@ document.addEventListener("click", e => {
   const act = a.dataset.act, el = a.closest(".sub"), k = el && el.dataset.k;
   if(act === "node"){ if(e.target.closest("a")) return; const n = a.closest(".node"); n.classList.toggle("op"); if(n.classList.contains("op")) OPEN[n.id] = 1; else delete OPEN[n.id]; save.open(); return }
   if(act === "toggle"){ openSub(el); return }
+  if(act === "skip0"){ SKIP0 = !SKIP0; ls.set(K.skip0, SKIP0 ? "1" : "0"); renderApp(); applyFilter(); return }
   if(act === "cycle"){ const c = st(k); setStatus(k, c === "todo" ? "learning" : c === "learning" ? "done" : "todo"); return }
   if(act === "set"){ setStatus(k, a.dataset.v); return }
   if(act === "qcheck"){ checkQuiz(el, k); return }
@@ -320,6 +350,13 @@ document.addEventListener("click", e => {
   }
 });
 document.addEventListener("change", e => {
+  const s = e.target.closest('[data-act="sc"]');
+  if(s){
+    const k = s.closest(".sub").dataset.k, key = k + "#sc", i = +s.dataset.i;
+    const arr = (CK[key] || []).filter(x => x !== i); if(s.checked) arr.push(i);
+    arr.sort((a, b) => a - b); if(arr.length) CK[key] = arr; else delete CK[key];
+    save.ck(); markDay(); refreshMeta(k); updateStats(); return;
+  }
   const c = e.target.closest('[data-act="ck"]'); if(!c) return;
   const el = c.closest(".sub"), k = el.dataset.k, i = +c.dataset.i;
   const arr = (CK[k] || []).filter(x => x !== i); if(c.checked) arr.push(i);
@@ -347,9 +384,9 @@ function applyFilter(){
       let vis = 0;
       nd.sub.forEach(sb => {
         const k = nd.id + "." + sb.id, el = document.getElementById("s-" + k);
-        let ok = FILTER === "all" || st(k) === FILTER;
+        let ok = FILTER === "all" || (FILTER === "open" ? st(k) !== "done" : st(k) === FILTER);
         if(ok && q){
-          const hay = [sb.w, sb.y, sb.t, nd.t, sg.s, ...(sb.a || []).map(x => x[0]), ...(sb.v || []).map(x => x[1] + " " + x[2]), ...(sb.d || []).map(x => x[0])].join(" ").toLowerCase();
+          const hay = [sb.w, sb.y, sb.t, nd.t, sg.s, ...(sb.kc || []), ...(sb.a || []).map(x => x[0]), ...(sb.v || []).map(x => x[1] + " " + x[2]), ...(sb.d || []).map(x => x[0])].join(" ").toLowerCase();
           ok = q.split(/\s+/).every(w => hay.includes(w));
         }
         el.hidden = !ok; if(ok) vis++;
@@ -364,12 +401,15 @@ function applyFilter(){
     if(stageVis) any = true;
   });
   $("#nores").hidden = any;
+  const nx = $("#next"); if(nx) nx.hidden = active;
+  const s0 = $("#stage-0"); if(s0) s0.classList.toggle("force", !!active);
 }
 let qT = null;
 $("#q").addEventListener("input", e => { clearTimeout(qT); qT = setTimeout(() => { QUERY = e.target.value; applyFilter() }, 120) });
 $("#chips").addEventListener("click", e => {
   const b = e.target.closest(".chip"); if(!b) return;
   FILTER = b.dataset.f; $$(".chip", $("#chips")).forEach(x => x.classList.toggle("on", x === b)); applyFilter();
+  ls.set(K.hideDone, FILTER === "open" ? "1" : "0");
 });
 document.addEventListener("keydown", e => {
   if(e.key === "/" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); if(!document.body.classList.contains("gmode")) $("#q").focus() }
@@ -440,9 +480,10 @@ const obs = new IntersectionObserver(es => {
 window.addEventListener("scroll", () => { const tb = $(".toolbar"); tb.classList.toggle("stuck", tb.getBoundingClientRect().top <= 61) }, {passive:true});
 
 // ---------- старт ----------
-$("#heroStats").textContent = SUBS.length + " подтем в " + D.length + " этапах · ~" + SUBS.reduce((a, r) => a + r.sb.h, 0) + " ч, включая pet-проекты";
+$("#heroStats").textContent = SUBS.length + " подтем в " + D.length + " этапах (0–" + (D.length - 1) + ") · ~" + SUBS.reduce((a, r) => a + r.sb.h, 0) + " ч, включая pet-проекты";
 renderApp();
 $$(".stage").forEach(s => obs.observe(s));
+if(ls.raw(K.hideDone) === "1"){ FILTER = "open"; $$(".chip", $("#chips")).forEach(x => x.classList.toggle("on", x.dataset.f === "open")); applyFilter() }
 if(!Object.keys(OPEN).length){ const f = $(".node"); if(f){ f.classList.add("op"); OPEN[f.id] = 1 } }
 
 window.RM = {D, BYKEY, st, setStatus, goto, esc, rich, I, src, QZ:() => QZ, NT:() => NT, saveNote(k, v){ if(v) NT[k] = v; else delete NT[k]; save.notes(); refreshMeta(k) }, pct, stats, TXT};

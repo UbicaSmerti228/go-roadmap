@@ -54,12 +54,14 @@
   <main class="main">
     <section class="hero">
       <h1>Go Backend: карта до первой работы</h1>
-      <p>От синтаксиса до gRPC и Kafka. К каждой подтеме — задание, статьи с разбором, видео, документация, практика и тест для самопроверки. <span id="heroStats"></span>.</p>
+      <p>От первой программы до gRPC, Kafka и оффера. К каждой подтеме — задание, статьи с разбором, видео, документация, практика и тест для самопроверки. <span id="heroStats"></span>.</p>
       <div class="legend">
         <span><span class="tag seq" style="margin:0">по порядку</span> темы внутри узла идут последовательно</span>
         <span><span class="tag par" style="margin:0">можно параллельно</span> узел можно учить вместе с соседними</span>
       </div>
     </section>
+
+    <div class="apply" id="applyHint" hidden><span><b>Пора откликаться.</b> Этап «Сервис» и первый проект готовы — не жди финиша карты, начинай поиск работы параллельно.</span><button class="btn sm" data-goto="job.where">К поиску работы</button></div>
 
     <section class="dash">
       <div class="card">
@@ -87,6 +89,7 @@
         <button class="chip" data-f="todo"><span class="dot" style="background:var(--todo)"></span>Не начато</button>
         <button class="chip" data-f="learning"><span class="dot" style="background:var(--learn)"></span>Изучаю</button>
         <button class="chip" data-f="done"><span class="dot" style="background:var(--done)"></span>Готово</button>
+        <button class="chip" data-f="open" title="Скрыть пройденное">Не пройдено</button>
       </div>
       <div class="tb-act">
         <button class="btn ghost sm" id="tExpand">Развернуть</button>

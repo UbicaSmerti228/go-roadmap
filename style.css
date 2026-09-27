@@ -301,3 +301,20 @@ body.gmode .dash{margin-top:0}
   #gside{width:100vw;max-width:100vw;border-left:0}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* объединение: суть, «нужны до», пропуск этапа 0, «что дальше», пора откликаться */
+.kc{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:9px 12px;margin-bottom:10px;font-size:13.5px}
+.kc b{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.kc-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;line-height:1.45}
+.kc-row+.kc-row{margin-top:6px;padding-top:6px;border-top:1px dashed var(--border)}
+.kc-row i{font-style:normal;color:var(--faint)}
+.req{font-size:12.5px;color:var(--faint);margin-top:6px}
+.skip-btn{margin-top:12px}
+.stage.skipped .stage-h h2,.stage.skipped .stage-h p{opacity:.6}
+.stage.skipped:not(.force) .nodes{display:none}
+.next{margin-top:44px}
+.next h2{display:flex;align-items:center;gap:10px;margin:0 0 4px;font-size:21px;letter-spacing:-.02em}
+.next-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:14px}
+.next-grid .card b{display:block;margin-bottom:4px}
+.apply{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 0;padding:12px 16px;border-radius:var(--r);border:1px solid var(--done);background:var(--done-soft);font-size:14.5px}
+.apply b{color:var(--done)}

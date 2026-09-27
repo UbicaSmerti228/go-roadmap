@@ -26,7 +26,7 @@ function build(){
   D.forEach((sg, si) => {
     const an = -Math.PI / 2 + si * 2 * Math.PI / D.length;
     const sx = Math.cos(an) * 430 + (hash("Sx" + si) - .5) * 70, sy = Math.sin(an) * 320 + (hash("Sy" + si) - .5) * 70;
-    GN.push({id:"S" + si, kind:"stage", label:(si + 1) + ". " + sg.s, ref:sg, si, r:26, x:sx, y:sy, vx:0, vy:0, fx:null, cx:sx, cy:sy});
+    GN.push({id:"S" + si, kind:"stage", label:si + ". " + sg.s, ref:sg, si, r:26, x:sx, y:sy, vx:0, vy:0, fx:null, cx:sx, cy:sy});
     if(si > 0) GE.push({a:"S" + (si - 1), b:"S" + si, len:320, path:true});
     let prev = null;
     sg.n.forEach((nd, ni) => {
@@ -99,7 +99,7 @@ function draw(){
     g.beginPath(); g.arc(N.x, N.y, N.r, 0, 6.2832);
     g.fillStyle = N === sel ? alpha(C.accent, .25) : v === "done" ? alpha(C.done, .22) : v === "learning" ? alpha(C.learn, .22) : C.surface;
     g.fill(); g.lineWidth = N === sel ? 3 : 2; g.strokeStyle = N === sel ? C.accent : col(v); g.stroke();
-    if(N.kind === "stage"){ g.fillStyle = C.text; g.font = "700 13px Inter,system-ui,sans-serif"; g.fillText(String(N.si + 1), N.x, N.y + 4.5) }
+    if(N.kind === "stage"){ g.fillStyle = C.text; g.font = "700 13px Inter,system-ui,sans-serif"; g.fillText(String(N.si), N.x, N.y + 4.5) }
     g.fillStyle = v === "todo" ? C.muted : C.text;
     g.font = (N.kind === "stage" ? "700 " + (small ? 14 : 13) : N.kind === "node" ? "600 " + (small ? 13 : 12) : (small ? 11 : 10.5)) + "px Inter,system-ui,sans-serif";
     if(N.kind !== "sub" || cam.z > .55) g.fillText(N.kind === "stage" ? N.ref.s : N.label, N.x, N.y + N.r + 14);
