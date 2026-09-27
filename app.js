@@ -2,7 +2,7 @@
 // ---------- хранилище ----------
 const K = {st:"go-roadmap-v1", days:"go-roadmap-days", notes:"go-roadmap-notes", pace:"go-roadmap-pace", open:"go-roadmap-open",
   quiz:"go-roadmap-quiz", ck:"go-roadmap-ck", theme:"go-roadmap-theme", view:"go-roadmap-view",
-  oldChk:"go-roadmap-chk", skip0:"go-roadmap-skip0", hideDone:"go-roadmap-hd"};
+  oldChk:"go-roadmap-chk", skip0:"go-roadmap-skip0", hideDone:"go-roadmap-hd", srs:"go-roadmap-srs"};
 const ls = {
   get(k, def){ try{ const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v) }catch(e){ return def } },
   raw(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
@@ -11,10 +11,11 @@ const ls = {
 let S = ls.get(K.st, {}), DY = ls.get(K.days, []), NT = ls.get(K.notes, {}), QZ = ls.get(K.quiz, {}), CK = ls.get(K.ck, {}), OPEN = ls.get(K.open, {});
 let PW = parseInt(ls.raw(K.pace) || "8", 10); if(!(PW > 0)) PW = 8;
 let SKIP0 = ls.raw(K.skip0) === "1";
+let SRS = ls.get(K.srs, {}); if(!SRS || typeof SRS !== "object") SRS = {};
 if(!S || typeof S !== "object") S = {}; if(!Array.isArray(DY)) DY = []; if(!NT || typeof NT !== "object") NT = {};
 const save = {
   st(){ ls.set(K.st, S) }, days(){ ls.set(K.days, DY) }, notes(){ ls.set(K.notes, NT) }, quiz(){ ls.set(K.quiz, QZ) },
-  ck(){ ls.set(K.ck, CK) }, open(){ ls.set(K.open, OPEN) }, pace(){ ls.set(K.pace, String(PW)) }
+  ck(){ ls.set(K.ck, CK) }, open(){ ls.set(K.open, OPEN) }, pace(){ ls.set(K.pace, String(PW)) }, srs(){ ls.set(K.srs, SRS) }
 };
 
 // Перенос прогресса со старой карты: "узел:индекс" → "узел.подтема"
@@ -27,6 +28,16 @@ function migrate(){
     const nk = MIGRATE[k];
     if(nk && RANK[v] > (RANK[S[nk]] || 0)) S[nk] = v;
     delete S[k]; changed = true;
+  }
+  // подтемы, переехавшие в другой узел: статус, заметка, тест, отметки и очередь повторения
+  if(typeof RENAME !== "undefined") for(const [o, n] of Object.entries(RENAME)){
+    if(S[o] !== undefined){ if(RANK[S[o]] > (RANK[S[n]] || 0)) S[n] = S[o]; delete S[o]; changed = true }
+    if(NT[o] !== undefined){ NT[n] = NT[n] ? NT[n] + "\n\n" + NT[o] : NT[o]; delete NT[o]; changed = true }
+    if(QZ[o] !== undefined){ if(!QZ[n] || QZ[o].s > QZ[n].s) QZ[n] = QZ[o]; delete QZ[o]; changed = true }
+    for(const suf of ["", "#sc", "#st"]) if(CK[o + suf] !== undefined){
+      CK[n + suf] = [...new Set([...(CK[n + suf] || []), ...CK[o + suf]])].sort((a, b) => a - b); delete CK[o + suf]; changed = true;
+    }
+    for(const q of Object.keys(SRS)) if(q.startsWith(o + "#")){ SRS[n + q.slice(o.length)] = SRS[q]; delete SRS[q]; changed = true }
   }
   for(const k of Object.keys(NT)){
     if(!k.includes(":")) continue;
@@ -44,7 +55,7 @@ function migrate(){
       if(!arr.includes(i)){ arr.push(i); arr.sort((a, b) => a - b); CK[key] = arr; changed = true }
     }
   }
-  if(changed){ save.st(); save.notes(); save.ck() }
+  if(changed){ save.st(); save.notes(); save.ck(); save.quiz(); save.srs() }
 }
 migrate();
 
@@ -62,7 +73,12 @@ function markDay(){ const t = today(); if(!DY.includes(t)){ DY.push(t); DY.sort(
 // ---------- утилиты ----------
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const rich = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+// `код` — в строке, блок ``` … ``` — многострочный код в вопросах
+const rich = s => {
+  const blocks = [];
+  const t = String(s).replace(/```\n?([\s\S]*?)\n?```/g, (_, c) => "\u0000" + (blocks.push(c) - 1) + "\u0000");
+  return esc(t).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\u0000(\d+)\u0000/g, (_, i) => '<pre class="qcode"><code>' + esc(blocks[i]) + "</code></pre>");
+};
 const plural = (n, a, b, c) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? b : c) };
 const P = {
   doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/>',
@@ -89,7 +105,10 @@ const P = {
   collapse:'<path d="m7 20 5-5 5 5M7 4l5 5 5-5"/>',
   trash:'<path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
   x:'<path d="M18 6 6 18M6 6l12 12"/>',
-  check:'<path d="M20 6 9 17l-5-5"/>'
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  box:'<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+  link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
 };
 const I = (n, cls = "") => '<svg class="i ' + cls + '" viewBox="0 0 24 24" aria-hidden="true">' + P[n] + "</svg>";
 const SRC = {"habr.com":"Хабр","metanit.com":"Metanit","postgrespro.ru":"Postgres Pro","developer.mozilla.org":"MDN","go.dev":"go.dev",
@@ -142,52 +161,92 @@ function lastAct(){
 
 // ---------- рендер ----------
 const TXT = {todo:"Не начато", learning:"Изучаю", done:"Готово"};
+// ---------- шаги подтемы: Пойми → Углубись → Сделай → Проверь себя → Умеешь ----------
+// отметки шагов хранятся в CK[key + "#st"]: 0 — главный материал изучен, 2 — задание сделано
+const STEP_T = {learn:"изучи главный материал", do:"сделай задание", quiz:"пройди тест", sc:"отметь, что умеешь"};
+function steps(r){
+  const {k, sb} = r, marks = CK[k + "#st"] || [], out = [];
+  if(sb.s) out.push({id:"learn", done:marks.includes(0)});
+  out.push({id:"do", done:sb.ck ? (CK[k] || []).length >= sb.ck.length : marks.includes(2)});
+  if(sb.q){ const q = QZ[k]; out.push({id:"quiz", done:!!q && q.n === sb.q.length && q.s === q.n}) }
+  if(sb.sc) out.push({id:"sc", done:(CK[k + "#sc"] || []).length >= sb.sc.length});
+  return out;
+}
+function nextStep(r){ const s = steps(r).find(x => !x.done); return s ? STEP_T[s.id] : "все шаги пройдены" }
 function subHTML(r){
-  const {k, sb} = r, v = st(k), q = QZ[k];
+  const {k, sb} = r, v = st(k), q = QZ[k], ss = steps(r), dn = ss.filter(x => x.done).length;
   let meta = '<span>' + I("clock") + "~" + sb.h + " ч</span>";
   if(sb.a) meta += "<span>" + I("doc") + sb.a.length + "</span>";
   if(sb.v) meta += "<span>" + I("play") + sb.v.length + "</span>";
-  if(sb.q) meta += '<span class="qb' + (q ? (q.s === q.n ? " ok" : " part") : "") + '">' + I("quiz") + (q ? "тест " + q.s + "/" + q.n : "тест") + "</span>";
-  if(sb.ck){ const c = (CK[k] || []).length; meta += '<span class="qb' + (c ? (c === sb.ck.length ? " ok" : " part") : "") + '">' + I("check") + c + "/" + sb.ck.length + "</span>" }
-  if(sb.sc){ const c = (CK[k + "#sc"] || []).length; meta += '<span class="qb' + (c ? (c === sb.sc.length ? " ok" : " part") : "") + '">' + I("check") + "умеешь " + c + "/" + sb.sc.length + "</span>" }
+  meta += '<span class="qb' + (dn ? (dn === ss.length ? " ok" : " part") : "") + '">' + I("check") + "шаги " + dn + "/" + ss.length + "</span>";
+  if(sb.q){
+    const stale = q && q.n !== sb.q.length;
+    meta += '<span class="qb' + (q ? (!stale && q.s === q.n ? " ok" : " part") : "") + '">' + I("quiz") + (!q ? "тест · " + sb.q.length : stale ? "тест: новые вопросы" : "тест " + q.s + "/" + q.n) + "</span>";
+  }
   if(NT[k]) meta += "<span>" + I("edit") + "заметка</span>";
   return '<div class="sub st-' + v + '" id="s-' + k + '" data-k="' + k + '"><div class="sub-h">' +
     '<button class="stt" data-act="cycle" title="' + TXT[v] + ' — нажми, чтобы сменить" aria-label="Статус: ' + TXT[v] + '"></button>' +
     '<div class="sub-main" data-act="toggle"><div class="sub-t">' + esc(sb.w) + '</div><div class="sub-m">' + meta + "</div></div>" +
     '<button class="chev" data-act="toggle" aria-label="Подробнее">' + I("chev") + '</button></div><div class="sub-b" hidden></div></div>';
 }
+const enTag = x => x === "en" ? '<span class="en">EN</span>' : "";
 function lnkList(arr){
-  return "<ul>" + arr.map(x => '<li><a class="lnk" href="' + esc(x[1]) + '" target="_blank" rel="noopener"><span class="src">' + esc(src(x[1])) + '</span><span class="lt">' + esc(x[0]) + (x[2] === "en" ? '<span class="en">EN</span>' : "") + "</span></a></li>").join("") + "</ul>";
+  return "<ul>" + arr.map(x => '<li><a class="lnk" href="' + esc(x[1]) + '" target="_blank" rel="noopener"><span class="src">' + esc(src(x[1])) + '</span><span class="lt">' + esc(x[0]) + enTag(x[2]) + "</span></a></li>").join("") + "</ul>";
+}
+const vidHTML = x => '<div><button class="vid" data-act="video" data-yt="' + esc(x[0]) + '"><span class="thumb"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + esc(x[0]) + '/mqdefault.jpg"><span class="play">' + I("play") + '</span><span class="dur">' + esc(x[3]) + '</span></span><span><span class="vt">' + esc(x[1]) + enTag(x[4]) + '</span><span class="vc">' + esc(x[2]) + "</span></span></button></div>";
+const ckList = (items, done, act) => items.map((c, i) => '<label><input type="checkbox" data-act="' + act + '" data-i="' + i + '"' + (done.includes(i) ? " checked" : "") + "><span>" + esc(c) + "</span></label>").join("");
+const stepCk = (i, on, label) => '<label class="step-ck"><input type="checkbox" data-act="step" data-i="' + i + '"' + (on ? " checked" : "") + ">" + label + "</label>";
+function stepHTML(n, id, title, hint, body, done, ck){
+  return '<li class="step' + (done ? " done" : "") + '" data-step="' + id + '"><div class="step-h"><span class="step-n"><em>' + n + "</em>" + I("check") + "</span><b>" + title + "</b>" +
+    (hint ? '<span class="step-hint">' + hint + "</span>" : "") + (ck || "") + '</div><div class="step-b">' + body + "</div></li>";
 }
 function subBody(r){
-  const {k, sb} = r, v = st(k);
+  const {k, sb} = r, v = st(k), marks = CK[k + "#st"] || [], done = {};
+  steps(r).forEach(x => done[x.id] = x.done);
   let h = '<p class="why">' + rich(sb.y) + "</p>";
   if(sb.kc) h += '<div class="kc"><b>Суть</b>' + sb.kc.map(c => '<div class="kc-row">' + c.split("→").map(x => "<span>" + rich(x.trim()) + "</span>").join('<i aria-hidden="true">→</i>') + "</div>").join("") + "</div>";
-  h += '<div class="task"><b>Задание</b>' + rich(sb.t) + "</div>";
   h += '<div class="st-seg">' + ["todo", "learning", "done"].map(x => '<button data-act="set" data-v="' + x + '" class="' + (v === x ? "on" : "") + '"><span class="stt ' + x + '" style="width:14px;height:14px;border-width:2px;pointer-events:none"></span>' + TXT[x] + "</button>").join("") + "</div>";
-  h += '<div class="res">';
-  if(sb.a) h += '<div class="res-g"><h5>' + I("doc") + "Статьи</h5>" + lnkList(sb.a) + "</div>";
-  if(sb.d) h += '<div class="res-g"><h5>' + I("book") + "Документация</h5>" + lnkList(sb.d) + "</div>";
-  if(sb.p) h += '<div class="res-g"><h5>' + I("code") + "Практика</h5>" + lnkList(sb.p) + "</div>";
-  if(sb.v) h += '<div class="res-g vids"><h5>' + I("play") + 'Видео</h5><div class="vgrid">' + sb.v.map(x =>
-    '<div><button class="vid" data-act="video" data-yt="' + esc(x[0]) + '"><span class="thumb"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + esc(x[0]) + '/mqdefault.jpg"><span class="play">' + I("play") + '</span><span class="dur">' + esc(x[3]) + '</span></span><span><span class="vt">' + esc(x[1]) + (x[4] === "en" ? '<span class="en">EN</span>' : "") + '</span><span class="vc">' + esc(x[2]) + "</span></span></button></div>").join("") + "</div></div>";
-  h += "</div>";
-  if(sb.sc){
-    const done = CK[k + "#sc"] || [];
-    h += '<div class="ck"><div class="quiz-h">' + I("target") + 'Умеешь<span class="mut">отметь, что уже получается</span></div>' + sb.sc.map((c, i) => '<label><input type="checkbox" data-act="sc" data-i="' + i + '"' + (done.includes(i) ? " checked" : "") + "><span>" + esc(c) + "</span></label>").join("") + "</div>";
+  let n = 0, out = "";
+  // 1. главный материал
+  if(sb.s){
+    const t = sb.s[0], x = sb[t][+sb.s.slice(1)];
+    const body = t === "v" ? '<div class="start">' + vidHTML(x) + "</div>"
+      : '<div class="start"><a class="start-a" href="' + esc(x[1]) + '" target="_blank" rel="noopener"><span class="src">' + esc(src(x[1])) + '</span><b>' + esc(x[0]) + enTag(x[2]) + '</b><span class="start-go">Открыть ' + I("ext") + "</span></a></div>";
+    out += stepHTML(++n, "learn", "Пойми", "начни с этого материала", body, done.learn, stepCk(0, marks.includes(0), "Готово"));
   }
-  if(sb.q) h += quizHTML(r);
-  if(sb.ck){
-    const done = CK[k] || [];
-    h += '<div class="ck"><div class="quiz-h">' + I("check") + "Чек-лист проекта</div>" + sb.ck.map((c, i) => '<label><input type="checkbox" data-act="ck" data-i="' + i + '"' + (done.includes(i) ? " checked" : "") + "><span>" + esc(c) + "</span></label>").join("") + "</div>";
+  // 2. остальные материалы
+  const rest = f => (sb[f] || []).filter((_, i) => sb.s !== f + i);
+  const ra = rest("a"), rd = rest("d"), rv = rest("v");
+  if(ra.length || rd.length || rv.length){
+    let b = '<div class="res">';
+    if(ra.length) b += '<div class="res-g"><h5>' + I("doc") + "Статьи</h5>" + lnkList(ra) + "</div>";
+    if(rd.length) b += '<div class="res-g"><h5>' + I("book") + "Документация</h5>" + lnkList(rd) + "</div>";
+    if(rv.length) b += '<div class="res-g vids"><h5>' + I("play") + 'Видео</h5><div class="vgrid">' + rv.map(vidHTML).join("") + "</div></div>";
+    out += stepHTML(++n, "deep", "Углубись", sb.s ? "если что-то осталось непонятным" : "", b + "</div>", false);
   }
+  // 3. задание и практика
+  let b = '<div class="task"><b>Задание</b>' + rich(sb.t) + "</div>";
+  if(sb.p) b += '<div class="res-g prac"><h5>' + I("code") + "Практика</h5>" + lnkList(sb.p) + "</div>";
+  if(sb.ck) b += '<div class="ck"><div class="quiz-h">' + I("check") + "Чек-лист проекта</div>" + ckList(sb.ck, CK[k] || [], "ck") + "</div>";
+  out += stepHTML(++n, "do", "Сделай", sb.ck ? "шаг закроется, когда отмечен весь чек-лист" : "руками закрепляется лучше всего", b, done.do, sb.ck ? "" : stepCk(2, marks.includes(2), "Сделано"));
+  // 4. тест
+  if(sb.q){
+    const q = QZ[k], stale = q && q.n !== sb.q.length;
+    const hint = !q ? sb.q.length + " " + plural(sb.q.length, "вопрос", "вопроса", "вопросов") + ", ошибки вернутся в повторение"
+      : stale ? "в тесте появились новые вопросы — пройди ещё раз" : "лучший результат: " + q.s + " из " + q.n;
+    out += stepHTML(++n, "quiz", "Проверь себя", hint, quizHTML(r), done.quiz);
+  }
+  // 5. самопроверка
+  if(sb.sc) out += stepHTML(++n, "sc", "Умеешь", "отметь, что уже получается без подсказок", '<div class="ck">' + ckList(sb.sc, CK[k + "#sc"] || [], "sc") + "</div>", done.sc);
+  h += '<ol class="steps">' + out + "</ol>";
+  h += '<div class="all-done"' + (steps(r).every(x => x.done) && v !== "done" ? "" : " hidden") + ">" + I("check") + 'Все шаги пройдены. Отметить тему готовой?<button class="btn sm" data-act="set" data-v="done">Да, готово</button></div>';
   const nv = NT[k] || "";
   h += '<button class="note-btn' + (nv ? " has" : "") + '" data-act="note">' + I("edit") + (nv ? "Заметка" : "Добавить заметку") + '</button><textarea class="note" placeholder="Свои заметки, ссылки, выводы…"' + (nv ? "" : " hidden") + ">" + esc(nv) + "</textarea>";
   return h;
 }
 function quizHTML(r){
-  const {k, sb} = r, best = QZ[k];
-  let h = '<div class="quiz"><div class="quiz-h">' + I("quiz") + "Проверь себя" + (best ? '<span class="mut">лучший результат: ' + best.s + " из " + best.n + "</span>" : "") + '</div><ol class="qs">';
+  const {k, sb} = r;
+  let h = '<div class="quiz"><ol class="qs">';
   sb.q.forEach((q, i) => {
     const opts = [[q[1], 1], ...q[2].map(x => [x, 0])], rnd = rng(k + i);
     for(let j = opts.length - 1; j > 0; j--){ const t = Math.floor(rnd() * (j + 1)); [opts[j], opts[t]] = [opts[t], opts[j]] }
@@ -195,7 +254,44 @@ function quizHTML(r){
   });
   return h + '</ol><div class="quiz-f"><button class="btn primary" data-act="qcheck">Проверить</button><button class="btn ghost" data-act="qreset">Сбросить ответы</button><span class="quiz-res"></span></div></div>';
 }
+// обновить отметки шагов и баннер «все шаги пройдены» у открытой подтемы
+function updateSteps(k){
+  const el = document.getElementById("s-" + k); if(!el) return;
+  const ss = steps(BYKEY[k]);
+  ss.forEach(x => { const li = $('.step[data-step="' + x.id + '"]', el); if(li) li.classList.toggle("done", x.done) });
+  const all = $(".all-done", el); if(all) all.hidden = !(ss.every(x => x.done) && st(k) !== "done");
+  const q = QZ[k], hint = $('.step[data-step="quiz"] .step-hint', el);
+  if(hint && q) hint.textContent = q.n !== BYKEY[k].sb.q.length ? "в тесте появились новые вопросы — пройди ещё раз" : "лучший результат: " + q.s + " из " + q.n;
+}
+// любое действие в теме: начатая тема сама становится «Изучаю» и попадает в «Сегодня»
+function afterProgress(k){
+  if(st(k) === "todo") setStatus(k, "learning");
+  updateSteps(k); refreshMeta(k); updateStats();
+}
 const NDT = {}; D.forEach(sg => sg.n.forEach(nd => NDT[nd.id] = nd.t));
+// milestone этапа: критерии (CK["miN"]) и шаг сквозного проекта (CK["miN#p"], ссылка на репозиторий — NT["miN"])
+function mileHTML(mi, si){
+  let h = '<div class="mile" data-mi="' + si + '"><h3>' + I("flag") + esc(mi.t) + '<span class="mile-cnt" data-mc="c"></span></h3><div class="ck mile-ck">' + ckList(mi.c, CK["mi" + si] || [], "mi") + "</div>";
+  if(mi.p){
+    const link = NT["mi" + si] || "";
+    h += '<div class="proj"><div class="proj-h">' + I("box") + "<b>" + esc(mi.p[0]) + '</b><span class="mile-cnt" data-mc="p"></span></div><p>' + esc(mi.p[1]) + '</p><div class="ck">' + ckList(mi.pc, CK["mi" + si + "#p"] || [], "mip") + "</div>" +
+      '<label class="proj-link">' + I("link") + '<input type="url" data-act="milink" placeholder="Ссылка на репозиторий или коммит этой версии" value="' + esc(link) + '"><a class="proj-open" target="_blank" rel="noopener"' + (/^https?:\/\//.test(link) ? ' href="' + esc(link) + '"' : " hidden") + ">Открыть " + I("ext") + "</a></label></div>";
+  }
+  return h + "</div>";
+}
+function mileState(si){
+  const mi = D[si].mi, c = (CK["mi" + si] || []).length, p = (CK["mi" + si + "#p"] || []).length;
+  return {c, cn:mi.c.length, p, pn:mi.pc ? mi.pc.length : 0};
+}
+function updateMile(si){
+  const el = $('.mile[data-mi="' + si + '"]'); if(!el) return;
+  const m = mileState(si), c = $('[data-mc="c"]', el), p = $('[data-mc="p"]', el);
+  c.textContent = m.c + "/" + m.cn; c.classList.toggle("full", m.c === m.cn);
+  if(p){ p.textContent = m.p + "/" + m.pn; p.classList.toggle("full", m.p === m.pn) }
+  el.classList.toggle("m-done", m.c === m.cn && m.p === m.pn);
+  const a = $(".proj-open", el), link = NT["mi" + si] || "";
+  if(a){ const ok = /^https?:\/\//.test(link); a.hidden = !ok; if(ok) a.href = link }
+}
 function renderApp(){
   let h = "";
   D.forEach((sg, si) => {
@@ -210,7 +306,7 @@ function renderApp(){
       nd.sub.forEach(sb => { h += subHTML(BYKEY[nd.id + "." + sb.id]) });
       h += "</div></div>";
     });
-    if(sg.mi) h += '<div class="mile"><h3>' + I("flag") + esc(sg.mi.t) + "</h3><ul>" + sg.mi.c.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul></div>";
+    if(sg.mi) h += mileHTML(sg.mi, si);
     h += "</div></section>";
   });
   if(typeof NEXT !== "undefined") h += '<section class="next" id="next"><h2>' + I("flag") + "Когда карта пройдена</h2><p class=mut>Не обязательно для первой работы — выбирай по вакансиям, которые нравятся.</p><div class=\"next-grid\">" + NEXT.map(x => '<div class="card"><b>' + esc(x[0]) + "</b><div class=mut>" + esc(x[1]) + "</div></div>").join("") + "</div></section>";
@@ -223,6 +319,28 @@ function renderApp(){
   });
   $("#snav").innerHTML = nav; $("#stageChips").innerHTML = chips;
   updateStats();
+}
+// «Сегодня»: что делать прямо сейчас — следующий шаг темы, повторение ошибок, задача дня по алгоритмам
+const DAILY = [];
+// порядок: сначала хеш-таблицы (Two Sum), потом остальные темы дорожки алгоритмов
+const ALGO = D.flatMap(sg => sg.n).find(nd => nd.id === "algo");
+if(ALGO) ["hash", "bigo", "window", "search", "tree"].forEach(id => { const sb = ALGO.sub.find(x => x.id === id); if(sb) (sb.p || []).forEach(x => { if(x[1].includes("leetcode.com")) DAILY.push({x, k:"algo." + id}) }) });
+function todayHTML(r){
+  const first = SUBS.find(x => !(x.si === 0 && SKIP0) && st(x.k) === "learning") || SUBS.find(x => !(x.si === 0 && SKIP0) && st(x.k) === "todo");
+  let h = "";
+  if(first){
+    h += '<button class="now-item" data-goto="' + first.k + '"><span class="stt ' + st(first.k) + '" style="pointer-events:none"></span><span><b>' + esc(first.sb.w) + "</b><small>" +
+      (st(first.k) === "learning" ? "Следующий шаг: " + nextStep(first) : "Следующая тема · " + esc(first.nd.t)) + "</small></span></button>";
+    const more = r.learning.filter(x => x !== first).slice(0, 2);
+    if(more.length) h += more.map(x => '<button class="now-item sm" data-goto="' + x.k + '"><span class="stt learning" style="pointer-events:none"></span><span><b>' + esc(x.sb.w) + "</b><small>" + nextStep(x) + "</small></span></button>").join("");
+  } else h += '<div class="empty">Карта пройдена. Время откликаться и проходить собеседования.</div>';
+  const due = srsDue().length;
+  if(due) h += '<button class="today-row" data-act="review">' + I("quiz") + "<span>Повторить ошибки: <b>" + due + "</b></span><i>" + I("chev") + "</i></button>";
+  // задача дня появляется, когда пройдены слайсы и мапы (или дорожка алгоритмов уже начата)
+  const solved = CK.daily || [], started = st("go-syn.coll") === "done" || DAILY.some(d => st(d.k) !== "todo");
+  const task = started && DAILY.find(d => !solved.includes(d.x[1]));
+  if(task) h += '<div class="today-row daily">' + I("code") + '<span>Задача дня: <a href="' + esc(task.x[1]) + '" target="_blank" rel="noopener">' + esc(task.x[0].replace(/^LeetCode \d+: /, "")) + "</a> <small class=mut>решено " + solved.length + " из " + DAILY.length + '</small></span><button class="btn sm" data-act="daily" data-u="' + esc(task.x[1]) + '">Решил</button></div>';
+  return h;
 }
 function updateStats(){
   const r = stats(), p = pct(r.dn, r.tot);
@@ -243,8 +361,8 @@ function updateStats(){
     node.classList.toggle("n-done", n.dn === n.tot); node.classList.toggle("n-learning", n.dn < n.tot && (n.lr > 0 || n.dn > 0));
   }
   // дашборд
-  $("#nowList").innerHTML = r.learning.length ? r.learning.slice(0, 4).map(x => '<button class="now-item" data-goto="' + x.k + '"><span class="stt learning" style="pointer-events:none"></span><span><b>' + esc(x.sb.w) + "</b><small>" + esc(x.nd.t) + " · " + esc(x.sg.s) + "</small></span></button>").join("") + (r.learning.length > 4 ? '<div class="mut">и ещё ' + (r.learning.length - 4) + "</div>" : "")
-    : '<div class="empty">Нажми на кружок у подтемы: один раз — «изучаю», второй — «готово». Здесь появится то, что ты учишь сейчас.</div>';
+  $("#nowList").innerHTML = todayHTML(r);
+  D.forEach((sg, si) => { if(sg.mi) updateMile(si) });
   const sk = streak();
   $("#streak").innerHTML = sk + ' <small>' + plural(sk, "день", "дня", "дней") + " подряд</small>";
   $("#lastAct").textContent = "Последняя активность: " + lastAct();
@@ -259,8 +377,18 @@ function updateStats(){
     if(s.dn < s.tot){ const ff = forecast(s.hrs); mi = esc(D[si].mi.t) + ": осталось " + (s.tot - s.dn) + " " + plural(s.tot - s.dn, "подтема", "подтемы", "подтем") + " (~" + s.hrs + " ч)" + (ff ? " → <b>" + ff.date + "</b>" : ""); break }
   }
   $("#fcMile").innerHTML = mi;
-  // пора откликаться: пройден этап «Сервис» и первый pet-проект
-  const svc = r.stages[4], ready = svc && svc.dn === svc.tot && st("pets.p1") === "done";
+  const due = srsDue(), queued = Object.keys(SRS).filter(qById);
+  const next = queued.map(q => SRS[q].due).sort()[0];
+  $("#revBody").innerHTML = due.length
+    ? '<div class="big">' + due.length + " <small>" + plural(due.length, "вопрос", "вопроса", "вопросов") + ' на сегодня</small></div><p class="mut">Вопросы, где ты ошибся. Повторяй, пока не запомнятся.</p><button class="btn primary" data-act="review">Повторить</button>'
+    : queued.length ? '<div class="empty">На сегодня всё. В очереди ' + queued.length + " " + plural(queued.length, "вопрос", "вопроса", "вопросов") + ", ближайшее повторение — " + new Date(next).toLocaleDateString("ru-RU", {day:"numeric", month:"long"}) + ".</div>"
+    : '<div class="empty">Ошибки из тестов попадут сюда и вернутся через 1, 3, 7 и 14 дней — пока не запомнятся.</div>';
+  const wl = weakList().slice(0, 5);
+  $("#weakBody").innerHTML = wl.length
+    ? wl.map(x => '<button class="weak-item" data-goto="' + x.r.k + '"><b>' + esc(x.r.sb.w) + "</b><span>" + x.why.map(w => "<i>" + esc(w) + "</i>").join("") + "</span></button>").join("")
+    : '<div class="empty">Здесь появятся темы, где тест пройден не полностью, были ошибки или не отмечено «Умеешь».</div>';
+  // пора откликаться: пройден этап «Сервис» или собрана версия сквозного проекта этого этапа
+  const svc = r.stages[4], m4 = mileState(4), ready = (svc && svc.dn === svc.tot) || (m4.pn > 0 && m4.p === m4.pn);
   $("#applyHint").hidden = !ready || D[D.length - 1].n.find(n => n.id === "job").sub.every(sb => st("job." + sb.id) === "done");
   const pw = $("#pw"); if(document.activeElement !== pw) pw.value = PW;
   if(window.gRefresh) window.gRefresh();
@@ -276,8 +404,8 @@ function setStatus(k, v){
     el.className = el.className.replace(/st-\w+/, "st-" + v);
     const b = $(".stt", el); b.title = TXT[v] + " — нажми, чтобы сменить"; b.setAttribute("aria-label", "Статус: " + TXT[v]);
     $$(".st-seg button", el).forEach(x => x.classList.toggle("on", x.dataset.v === v));
-    const hint = $(".done-hint", el); if(hint && v === "done") hint.remove();
   }
+  updateSteps(k);
   updateStats();
 }
 function refreshMeta(k){
@@ -310,23 +438,23 @@ function checkQuiz(el, k){
     const lab = sel.closest(".opt");
     if(sel.dataset.ok === "1"){ ok++; lab.classList.add("ok") } else { lab.classList.add("bad"); $('input[data-ok="1"]', q).closest(".opt").classList.add("ok") }
     $(".q-ex", q).hidden = false;
+    if(!q.dataset.rec){ srsRecord(k + "#" + qs.indexOf(q), sel.dataset.ok === "1"); q.dataset.rec = "1" }
   });
   const n = qs.length, res = $(".quiz-res", quiz);
   if(!answered){ res.className = "quiz-res part"; res.textContent = "Выбери ответы"; return }
   res.className = "quiz-res " + (ok === n ? "ok" : "part");
   res.textContent = ok === n ? "Все " + n + " верно!" : "Верно " + ok + " из " + n;
-  if(answered === n && (!QZ[k] || ok >= QZ[k].s)){ QZ[k] = {s:ok, n}; save.quiz(); markDay(); refreshMeta(k); updateStats() }
-  if(ok === n && st(k) !== "done" && !$(".done-hint", quiz)){
-    quiz.insertAdjacentHTML("beforeend", '<div class="done-hint">' + I("check") + 'Тема усвоена. Отметить как пройденную?<button class="btn sm" data-act="set" data-v="done">Да, готово</button></div>');
-  }
+  // лучший результат; если в тест добавили вопросы, старый результат заменяется новым
+  if(answered === n && (!QZ[k] || QZ[k].n !== n || ok >= QZ[k].s)){ QZ[k] = {s:ok, n}; save.quiz() }
+  markDay(); afterProgress(k);
 }
 function resetQuiz(el){
   const quiz = $(".quiz", el);
   $$("input", quiz).forEach(i => i.checked = false);
   $$(".opt", quiz).forEach(o => o.classList.remove("ok", "bad"));
-  $$(".q", quiz).forEach(q => q.classList.remove("skip"));
+  $$(".q", quiz).forEach(q => { q.classList.remove("skip"); delete q.dataset.rec });
   $$(".q-ex", quiz).forEach(x => x.hidden = true);
-  $(".quiz-res", quiz).textContent = ""; const hint = $(".done-hint", quiz); if(hint) hint.remove();
+  $(".quiz-res", quiz).textContent = "";
 }
 
 document.addEventListener("click", e => {
@@ -335,6 +463,8 @@ document.addEventListener("click", e => {
   const act = a.dataset.act, el = a.closest(".sub"), k = el && el.dataset.k;
   if(act === "node"){ if(e.target.closest("a")) return; const n = a.closest(".node"); n.classList.toggle("op"); if(n.classList.contains("op")) OPEN[n.id] = 1; else delete OPEN[n.id]; save.open(); return }
   if(act === "toggle"){ openSub(el); return }
+  if(act === "review"){ openReview(); return }
+  if(act === "daily"){ CK.daily = [...(CK.daily || []), a.dataset.u]; save.ck(); markDay(); updateStats(); return }
   if(act === "skip0"){ SKIP0 = !SKIP0; ls.set(K.skip0, SKIP0 ? "1" : "0"); renderApp(); applyFilter(); return }
   if(act === "cycle"){ const c = st(k); setStatus(k, c === "todo" ? "learning" : c === "learning" ? "done" : "todo"); return }
   if(act === "set"){ setStatus(k, a.dataset.v); return }
@@ -342,36 +472,130 @@ document.addEventListener("click", e => {
   if(act === "qreset"){ resetQuiz(el); return }
   if(act === "note"){ const t = $(".note", el); t.hidden = !t.hidden; if(!t.hidden) t.focus(); return }
   if(act === "video"){
-    const yt = a.dataset.yt, box = a.parentElement, ex = $(".player", box);
+    const box = a.parentElement, ex = $(".player", box);
     if(ex){ ex.remove(); return }
-    $$(".player", el).forEach(p => p.remove());
-    box.insertAdjacentHTML("beforeend", '<div class="player"><iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(yt) + '?autoplay=1&rel=0" title="Видео" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe><div class="player-f"><a href="https://www.youtube.com/watch?v=' + encodeURIComponent(yt) + '" target="_blank" rel="noopener">Открыть на YouTube ' + I("ext") + '</a><button class="btn sm ghost" data-act="video" data-yt="' + esc(yt) + '">Закрыть</button></div></div>');
+    playVideo(el, box, a.dataset.yt, 0);
     return;
   }
 });
+function playVideo(el, box, yt, start){
+  $$(".player", el).forEach(p => p.remove());
+  const t = start ? "&start=" + (start | 0) : "", tw = start ? "&t=" + (start | 0) + "s" : "";
+  box.insertAdjacentHTML("beforeend", '<div class="player"><iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(yt) + '?autoplay=1&rel=0' + t + '" title="Видео" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe><div class="player-f"><a href="https://www.youtube.com/watch?v=' + encodeURIComponent(yt) + tw + '" target="_blank" rel="noopener">Открыть на YouTube ' + I("ext") + '</a><button class="btn sm ghost" data-act="video" data-yt="' + esc(yt) + '">Закрыть</button></div></div>');
+  const p = $(".player", box); if(p) setTimeout(() => p.scrollIntoView({behavior:"smooth", block:"center"}), 60);
+}
+function openVideo(k, yt, start){
+  goto(k);
+  const el = document.getElementById("s-" + k), btn = el && $('.vid[data-yt="' + CSS.escape(yt) + '"]', el);
+  if(btn) setTimeout(() => playVideo(el, btn.parentElement, yt, start), 300);
+  else window.open("https://www.youtube.com/watch?v=" + encodeURIComponent(yt) + "&t=" + (start | 0) + "s", "_blank", "noopener");
+}
+// отметки хранятся списками индексов: CK[key] = [0, 2, …]
+function toggleMark(key, i, on){
+  const arr = (CK[key] || []).filter(x => x !== i); if(on) arr.push(i);
+  arr.sort((a, b) => a - b); if(arr.length) CK[key] = arr; else delete CK[key];
+  save.ck(); markDay();
+}
+const MARK = {sc:"#sc", step:"#st", ck:""};
 document.addEventListener("change", e => {
-  const s = e.target.closest('[data-act="sc"]');
-  if(s){
-    const k = s.closest(".sub").dataset.k, key = k + "#sc", i = +s.dataset.i;
-    const arr = (CK[key] || []).filter(x => x !== i); if(s.checked) arr.push(i);
-    arr.sort((a, b) => a - b); if(arr.length) CK[key] = arr; else delete CK[key];
-    save.ck(); markDay(); refreshMeta(k); updateStats(); return;
+  const c = e.target.closest("[data-act]"); if(!c) return;
+  const act = c.dataset.act;
+  if(act in MARK){
+    const k = c.closest(".sub").dataset.k;
+    toggleMark(k + MARK[act], +c.dataset.i, c.checked); afterProgress(k); return;
   }
-  const c = e.target.closest('[data-act="ck"]'); if(!c) return;
-  const el = c.closest(".sub"), k = el.dataset.k, i = +c.dataset.i;
-  const arr = (CK[k] || []).filter(x => x !== i); if(c.checked) arr.push(i);
-  CK[k] = arr.sort(); if(!arr.length) delete CK[k]; save.ck(); markDay(); refreshMeta(k);
-  const box = c.closest(".ck"), total = BYKEY[k].sb.ck.length;
-  if(arr.length === total && st(k) !== "done" && !$(".done-hint", box)) box.insertAdjacentHTML("beforeend", '<div class="done-hint">' + I("check") + 'Всё сделано. Отметить проект как готовый?<button class="btn sm" data-act="set" data-v="done">Да, готово</button></div>');
-  updateStats();
+  if(act === "mi" || act === "mip"){
+    const si = c.closest(".mile").dataset.mi;
+    toggleMark("mi" + si + (act === "mip" ? "#p" : ""), +c.dataset.i, c.checked); updateMile(si); updateStats();
+  }
 });
 let noteT = null;
 document.addEventListener("input", e => {
-  const t = e.target.closest(".note"); if(!t) return;
-  const el = t.closest(".sub"), k = el.dataset.k;
+  const ml = e.target.closest('[data-act="milink"]');
+  if(ml){
+    const key = "mi" + ml.closest(".mile").dataset.mi, v = ml.value.trim();
+    if(v) NT[key] = v; else delete NT[key];
+    clearTimeout(noteT); noteT = setTimeout(() => { save.notes(); updateMile(key.slice(2)) }, 300); return;
+  }
+  const t = e.target.closest(".note"), el = t && t.closest(".sub"); if(!el) return;
+  const k = el.dataset.k;
   if(t.value) NT[k] = t.value; else delete NT[k];
   clearTimeout(noteT); noteT = setTimeout(() => { save.notes(); refreshMeta(k); const b = $(".note-btn", el); b.classList.toggle("has", !!t.value) }, 300);
 });
+
+// ---------- повторение ошибок (интервальные повторения) ----------
+const IV = [1, 3, 7, 14];
+const addDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return ymd(d) };
+function qById(qid){
+  const i = qid.lastIndexOf("#"), r = BYKEY[qid.slice(0, i)], n = +qid.slice(i + 1);
+  return r && r.sb.q && r.sb.q[n] ? {r, q:r.sb.q[n], n} : null;
+}
+// ошибка → вернётся завтра; верный ответ → следующий интервал; после 14 дней вопрос считается выученным
+function srsRecord(qid, ok){
+  const c = SRS[qid];
+  if(!ok) SRS[qid] = {b:0, due:addDays(IV[0]), w:(c ? c.w : 0) + 1};
+  else if(c){ const b = c.b + 1; if(b >= IV.length) delete SRS[qid]; else SRS[qid] = {b, due:addDays(IV[b]), w:c.w} }
+  else return;
+  save.srs();
+}
+const srsDue = () => { const t = today(); return Object.keys(SRS).filter(q => SRS[q].due <= t && qById(q)) };
+let RV = null;
+function openReview(){
+  const due = srsDue(); if(!due.length) return;
+  const rnd = rng(today() + due.length);
+  RV = {list:due.map(q => [rnd(), q]).sort((a, b) => a[0] - b[0]).map(x => x[1]), i:0, ok:0};
+  $("#review").hidden = false; document.body.classList.add("modal-open"); showCard();
+}
+function closeReview(){ if(!RV) return; RV = null; $("#review").hidden = true; document.body.classList.remove("modal-open"); updateStats() }
+function showCard(){
+  const box = $("#rvBody");
+  if(RV.i >= RV.list.length){
+    box.innerHTML = '<div class="rv-sum"><div class="big">' + RV.ok + ' <small>из ' + RV.list.length + " верно</small></div><p class=mut>Ошибки вернутся завтра, верные ответы — через 3, 7 и 14 дней. После этого вопрос считается выученным.</p><button class=\"btn primary\" data-rv=\"close\">Готово</button></div>";
+    return;
+  }
+  const qid = RV.list[RV.i], x = qById(qid), q = x.q, rnd = rng(qid + RV.i);
+  const opts = [[q[1], 1], ...q[2].map(o => [o, 0])];
+  for(let j = opts.length - 1; j > 0; j--){ const t = Math.floor(rnd() * (j + 1)); [opts[j], opts[t]] = [opts[t], opts[j]] }
+  box.innerHTML = '<div class="rv-top"><span>Вопрос ' + (RV.i + 1) + " из " + RV.list.length + '</span><span class="mut">' + esc(x.r.sb.w) + '</span></div><div class="q"><div class="q-t">' + rich(q[0]) + '</div><div class="opts">' +
+    opts.map(o => '<label class="opt"><input type="radio" name="rv" data-ok="' + o[1] + '"><span>' + rich(o[0]) + "</span></label>").join("") +
+    '</div><div class="q-ex" hidden>' + rich(q[3]) + '</div></div><div class="quiz-f"><button class="btn primary" data-rv="check">Проверить</button><button class="btn ghost" data-rv="topic" data-k="' + x.r.k + '">Открыть тему</button><span class="quiz-res"></span></div>';
+}
+$("#review").addEventListener("click", e => {
+  if(e.target.id === "review"){ closeReview(); return }
+  const b = e.target.closest("[data-rv]"); if(!b || !RV) return;
+  const act = b.dataset.rv, box = $("#rvBody");
+  if(act === "close") closeReview();
+  else if(act === "topic"){ const k = b.dataset.k; closeReview(); goto(k) }
+  else if(act === "next"){ RV.i++; showCard() }
+  else if(act === "check"){
+    const sel = $("input:checked", box), res = $(".quiz-res", box);
+    if(!sel){ res.className = "quiz-res part"; res.textContent = "Выбери ответ"; return }
+    const ok = sel.dataset.ok === "1";
+    sel.closest(".opt").classList.add(ok ? "ok" : "bad");
+    if(!ok) $('input[data-ok="1"]', box).closest(".opt").classList.add("ok");
+    $$("input", box).forEach(i => i.disabled = true);
+    $(".q-ex", box).hidden = false;
+    res.className = "quiz-res " + (ok ? "ok" : "part"); res.textContent = ok ? "Верно" : "Неверно — вернётся завтра";
+    if(ok) RV.ok++;
+    srsRecord(RV.list[RV.i], ok); markDay();
+    b.textContent = RV.i + 1 < RV.list.length ? "Дальше" : "Итог"; b.dataset.rv = "next";
+  }
+});
+// слабые места: тест пройден не полностью, есть ошибки в повторении, не отмечено «Умеешь» у начатой темы
+function weakList(){
+  const out = [];
+  SUBS.forEach(r => {
+    const k = r.k, q = QZ[k], v = st(k), why = []; let score = 0;
+    if(q && q.s < q.n){ score += (1 - q.s / q.n) * 3; why.push("тест " + q.s + "/" + q.n) }
+    const w = (r.sb.q || []).reduce((a, _, i) => a + ((SRS[k + "#" + i] || {}).w || 0), 0);
+    if(w){ score += w; why.push(w + " " + plural(w, "ошибка", "ошибки", "ошибок") + " в повторении") }
+    if(r.sb.sc && v !== "todo"){ const c = (CK[k + "#sc"] || []).length, n = r.sb.sc.length; if(c < n){ score += (1 - c / n) * (v === "done" ? 2 : 1); why.push("умеешь " + c + "/" + n) } }
+    if(v === "done" && r.sb.q && !q){ score += 1; why.push("тест не пройден") }
+    if(q && r.sb.q && q.n !== r.sb.q.length && v !== "todo"){ score += .5; why.push("в тесте новые вопросы") }
+    if(score > 0) out.push({r, score, why});
+  });
+  return out.sort((a, b) => b.score - a.score);
+}
 
 // ---------- поиск и фильтр ----------
 let FILTER = "all", QUERY = "";
@@ -405,7 +629,7 @@ function applyFilter(){
   const s0 = $("#stage-0"); if(s0) s0.classList.toggle("force", !!active);
 }
 let qT = null;
-$("#q").addEventListener("input", e => { clearTimeout(qT); qT = setTimeout(() => { QUERY = e.target.value; applyFilter() }, 120) });
+
 $("#chips").addEventListener("click", e => {
   const b = e.target.closest(".chip"); if(!b) return;
   FILTER = b.dataset.f; $$(".chip", $("#chips")).forEach(x => x.classList.toggle("on", x === b)); applyFilter();
@@ -413,7 +637,7 @@ $("#chips").addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => {
   if(e.key === "/" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); if(!document.body.classList.contains("gmode")) $("#q").focus() }
-  if(e.key === "Escape"){ $("#menuPop").hidden = true; if(document.activeElement === $("#q")){ $("#q").value = ""; QUERY = ""; applyFilter(); $("#q").blur() } }
+  if(e.key === "Escape"){ $("#menuPop").hidden = true; closeReview(); if(document.activeElement === $("#q")){ $("#q").value = ""; $("#sres").hidden = true; $("#q").blur() } }
 });
 
 // ---------- шапка, меню, тема, вид ----------
@@ -441,7 +665,7 @@ function expandAll(on){
 $("#mExpand").onclick = $("#tExpand").onclick = () => expandAll(true);
 $("#mCollapse").onclick = $("#tCollapse").onclick = () => expandAll(false);
 $("#mExport").onclick = () => {
-  const data = {v:3, status:S, days:DY, notes:NT, pace:PW, quiz:QZ, checks:CK};
+  const data = {v:4, status:S, days:DY, notes:NT, pace:PW, quiz:QZ, checks:CK, srs:SRS};
   const b = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"}), a = document.createElement("a");
   a.href = URL.createObjectURL(b); a.download = "go-roadmap-progress-" + today() + ".json"; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000); $("#menuPop").hidden = true;
@@ -458,6 +682,7 @@ $("#fi").onchange = e => {
       if(d.notes && typeof d.notes === "object") NT = d.notes;
       if(d.quiz && typeof d.quiz === "object") QZ = d.quiz;
       if(d.checks && typeof d.checks === "object") CK = d.checks;
+      if(d.srs && typeof d.srs === "object"){ SRS = d.srs; save.srs() }
       if(parseInt(d.pace, 10) > 0) PW = parseInt(d.pace, 10);
       migrate(); save.st(); save.days(); save.notes(); save.quiz(); save.ck(); save.pace();
       renderApp(); applyFilter();
@@ -468,7 +693,7 @@ $("#fi").onchange = e => {
 $("#mReset").onclick = () => {
   $("#menuPop").hidden = true;
   if(!confirm("Сбросить весь прогресс: статусы, тесты, чек-листы, заметки и активность? Сначала можно скачать копию через меню.")) return;
-  S = {}; DY = []; NT = {}; QZ = {}; CK = {}; save.st(); save.days(); save.notes(); save.quiz(); save.ck();
+  S = {}; DY = []; NT = {}; QZ = {}; CK = {}; SRS = {}; save.st(); save.days(); save.notes(); save.quiz(); save.ck(); save.srs();
   renderApp(); applyFilter();
 };
 $("#pw").onchange = e => { PW = parseInt(e.target.value, 10); if(!(PW > 0)) PW = 8; save.pace(); updateStats() };
@@ -486,5 +711,5 @@ $$(".stage").forEach(s => obs.observe(s));
 if(ls.raw(K.hideDone) === "1"){ FILTER = "open"; $$(".chip", $("#chips")).forEach(x => x.classList.toggle("on", x.dataset.f === "open")); applyFilter() }
 if(!Object.keys(OPEN).length){ const f = $(".node"); if(f){ f.classList.add("op"); OPEN[f.id] = 1 } }
 
-window.RM = {D, BYKEY, st, setStatus, goto, esc, rich, I, src, QZ:() => QZ, NT:() => NT, saveNote(k, v){ if(v) NT[k] = v; else delete NT[k]; save.notes(); refreshMeta(k) }, pct, stats, TXT};
+window.RM = {D, BYKEY, st, setStatus, goto, openVideo, esc, rich, I, src, QZ:() => QZ, NT:() => NT, saveNote(k, v){ if(v) NT[k] = v; else delete NT[k]; save.notes(); refreshMeta(k) }, pct, stats, TXT};
 if(ls.raw(K.view) === '"g"' || ls.raw(K.view) === "g") setTimeout(() => setView("g"), 0);

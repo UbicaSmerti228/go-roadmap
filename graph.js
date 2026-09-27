@@ -133,9 +133,9 @@ function side(N){
     const sb = N.sb, q = window.RM.QZ()[N.k];
     h += "Подтема · ~" + sb.h + " ч · " + TXT[v] + (q ? " · тест " + q.s + "/" + q.n : "") + '</div><p class="mut" style="margin:8px 0 0">' + rich(sb.y) + '</p><div class="task"><b>Задание</b>' + rich(sb.t) + "</div>";
     h += '<div class="st-seg" id="gst">' + ["todo", "learning", "done"].map(x => '<button data-v="' + x + '" class="' + (v === x ? "on" : "") + '">' + TXT[x] + "</button>").join("") + "</div>";
-    const first = [];
-    if(sb.a) first.push(['<span class="src">' + esc(src(sb.a[0][1])) + "</span>", sb.a[0][0], sb.a[0][1]]);
-    if(sb.v) first.push(['<span class="src">YouTube</span>', sb.v[0][1], "https://www.youtube.com/watch?v=" + sb.v[0][0]]);
+    // тот же главный материал, что и в шаге «Пойми»
+    const first = [], m = sb.s && sb[sb.s[0]] && sb[sb.s[0]][+sb.s.slice(1)];
+    if(m) first.push(sb.s[0] === "v" ? ['<span class="src">YouTube</span>', m[1], "https://www.youtube.com/watch?v=" + m[0]] : ['<span class="src">' + esc(src(m[1])) + "</span>", m[0], m[1]]);
     if(first.length) h += '<div class="res-g"><h5>' + I("doc") + "С чего начать</h5><ul>" + first.map(x => '<li><a class="lnk" target="_blank" rel="noopener" href="' + esc(x[2]) + '">' + x[0] + '<span class="lt">' + esc(x[1]) + "</span></a></li>").join("") + "</ul></div>";
     h += '<textarea class="note" id="gnote" placeholder="Заметка…">' + esc(window.RM.NT()[N.k] || "") + "</textarea>";
     h += '<div class="row"><button class="btn primary" data-goto="' + N.k + '">Все материалы и тест</button></div>';
