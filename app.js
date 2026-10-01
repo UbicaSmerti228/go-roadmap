@@ -324,7 +324,7 @@ function renderApp(){
 const DAILY = [];
 // порядок: сначала хеш-таблицы (Two Sum), потом остальные темы дорожки алгоритмов
 const ALGO = D.flatMap(sg => sg.n).find(nd => nd.id === "algo");
-if(ALGO) ["hash", "bigo", "window", "search", "tree"].forEach(id => { const sb = ALGO.sub.find(x => x.id === id); if(sb) (sb.p || []).forEach(x => { if(x[1].includes("leetcode.com")) DAILY.push({x, k:"algo." + id}) }) });
+if(ALGO) ["hash", "bigo", "window", "search", "tree", "heap", "dp"].forEach(id => { const sb = ALGO.sub.find(x => x.id === id); if(sb) (sb.p || []).forEach(x => { if(x[1].includes("leetcode.com")) DAILY.push({x, k:"algo." + id}) }) });
 function todayHTML(r){
   const first = SUBS.find(x => !(x.si === 0 && SKIP0) && st(x.k) === "learning") || SUBS.find(x => !(x.si === 0 && SKIP0) && st(x.k) === "todo");
   let h = "";
