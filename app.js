@@ -276,6 +276,7 @@ function mileHTML(mi, si){
   if(mi.p){
     const link = NT["mi" + si] || "";
     h += '<div class="proj"><div class="proj-h">' + I("box") + "<b>" + esc(mi.p[0]) + '</b><span class="mile-cnt" data-mc="p"></span></div><p>' + esc(mi.p[1]) + '</p><div class="ck">' + ckList(mi.pc, CK["mi" + si + "#p"] || [], "mip") + "</div>" +
+      (mi.ref ? '<a class="proj-ref" href="' + esc(mi.ref) + '" target="_blank" rel="noopener">' + I("code") + "<span><b>Сверить с эталоном</b><small>Сначала сделай версию сам, потом сравни. Эталон — один из разумных вариантов, а не единственно верный.</small></span>" + I("ext") + "</a>" : "") +
       '<label class="proj-link">' + I("link") + '<input type="url" data-act="milink" placeholder="Ссылка на репозиторий или коммит этой версии" value="' + esc(link) + '"><a class="proj-open" target="_blank" rel="noopener"' + (/^https?:\/\//.test(link) ? ' href="' + esc(link) + '"' : " hidden") + ">Открыть " + I("ext") + "</a></label></div>";
   }
   return h + "</div>";

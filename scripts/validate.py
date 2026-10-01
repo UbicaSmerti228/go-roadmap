@@ -39,6 +39,8 @@ for s in D:
         err(f"этап «{s['s']}»: нет milestone с t и c")
     elif mi.get("p") and not mi.get("pc"):
         err(f"этап «{s['s']}»: у шага проекта нет чек-листа pc")
+    if mi and mi.get("ref") and not str(mi["ref"]).startswith("https://"):
+        err(f"этап «{s['s']}»: ref должен быть ссылкой https")
 
 # ---- подтемы
 keys = set()

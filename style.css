@@ -412,6 +412,11 @@ body.modal-open{overflow:hidden}
 .proj-h{display:flex;align-items:center;gap:8px;font-size:14.5px}
 .proj-h svg.i{color:var(--violet)}
 .proj p{margin:4px 0 8px;font-size:13.5px;color:var(--muted)}
+.proj-ref{display:flex;align-items:center;gap:10px;margin-top:12px;padding:9px 12px;border:1px dashed var(--border-strong);border-radius:9px;color:var(--text);text-decoration:none}
+.proj-ref:hover{border-color:var(--accent)}
+.proj-ref span{flex:1;min-width:0}
+.proj-ref b{display:block;font-size:14px}
+.proj-ref small{display:block;color:var(--muted);font-size:12px}
 .proj-link{display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--muted)}
 .proj-link input{flex:1;min-width:0;background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font:13px/1.3 inherit}
 .proj-link input:focus{outline:0;border-color:var(--accent)}
