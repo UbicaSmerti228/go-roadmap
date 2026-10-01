@@ -72,6 +72,11 @@ for key, si, node, u in subs(D):
             err(f"{where}: неверных вариантов {len(q[2])}, нужно 3")
         if q[1] in q[2] or len(set(q[2])) != len(q[2]):
             err(f"{where}: варианты ответа повторяются")
+    ac = u.get("ac")
+    if ac is not None and not (isinstance(ac, list) and 2 <= len(ac) <= 4 and all(isinstance(x, str) and x for x in ac)):
+        err(f"{key}: ac должен быть списком из 2–4 строк")
+    if not ac and not u.get("ck"):
+        warn(f"{key}: нет критериев приёмки задания (ac)")
     if not u.get("sc") and not u.get("ck"):
         warn(f"{key}: нет самопроверки (sc) или чек-листа (ck)")
     if not u.get("q") and not u.get("ck"):
@@ -98,6 +103,12 @@ if os.path.exists(idx):
     stale = {a[2] for a in sx.get("a", []) if a[2] not in keys} | {c[3] for c in sx.get("c", []) if c[3] not in keys}
     for k in sorted(stale):
         err(f"search-index.js: ссылка на несуществующую подтему {k}")
+    have = {a[1] for a in sx.get("a", [])}
+    want = {m[1] for _, _, _, u in subs(D) for f in "ad" for m in u.get(f) or []}
+    vids = {x[0] for _, _, _, u in subs(D) for x in u.get("v") or []}
+    missing = len(want - have) + len(vids - set(sx.get("vt", {})))
+    if missing:
+        warn(f"в поисковом индексе нет {missing} материалов — запусти python3 scripts/build_search_index.py")
 
 total = sum(u["h"] for _, _, _, u in subs(D))
 print(f"Этапов: {len(D)}, узлов: {len(order)}, подтем: {len(keys)}, часов: {total}")

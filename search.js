@@ -83,7 +83,7 @@ function build(){
   DOCS = [];
   D.forEach(sg => sg.n.forEach(nd => nd.sub.forEach(sb => {
     const k = nd.id + "." + sb.id;
-    add({type:"sub", k, title:sb.w, snip:(sb.kc && sb.kc[0]) || sb.y}, sb.w, (sb.kc || []).join(" "), sb.y + " " + sb.t + " " + nd.t + " " + (sb.sc || []).join(" "));
+    add({type:"sub", k, title:sb.w, snip:(sb.kc && sb.kc[0]) || sb.y}, sb.w, (sb.kc || []).join(" "), sb.y + " " + sb.t + " " + nd.t + " " + (sb.sc || []).join(" ") + " " + (sb.ac || []).join(" "));
     // у вопроса с кодом в заголовок идёт первая содержательная строка кода, весь код — в поисковый текст
     (sb.q || []).forEach((q, i) => {
       const [ask, code = ""] = q[0].split(/\n```\n?/);

@@ -226,6 +226,7 @@ function subBody(r){
   }
   // 3. задание и практика
   let b = '<div class="task"><b>Задание</b>' + rich(sb.t) + "</div>";
+  if(sb.ac) b += '<div class="ac"><b>Как понять, что сделано</b><ul>' + sb.ac.map(x => "<li>" + rich(x) + "</li>").join("") + "</ul></div>";
   if(sb.p) b += '<div class="res-g prac"><h5>' + I("code") + "Практика</h5>" + lnkList(sb.p) + "</div>";
   if(sb.ck) b += '<div class="ck"><div class="quiz-h">' + I("check") + "Чек-лист проекта</div>" + ckList(sb.ck, CK[k] || [], "ck") + "</div>";
   out += stepHTML(++n, "do", "Сделай", sb.ck ? "шаг закроется, когда отмечен весь чек-лист" : "руками закрепляется лучше всего", b, done.do, sb.ck ? "" : stepCk(2, marks.includes(2), "Сделано"));
