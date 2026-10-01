@@ -2,7 +2,8 @@
 // ---------- хранилище ----------
 const K = {st:"go-roadmap-v1", days:"go-roadmap-days", notes:"go-roadmap-notes", pace:"go-roadmap-pace", open:"go-roadmap-open",
   quiz:"go-roadmap-quiz", ck:"go-roadmap-ck", theme:"go-roadmap-theme", view:"go-roadmap-view",
-  oldChk:"go-roadmap-chk", skip0:"go-roadmap-skip0", hideDone:"go-roadmap-hd", srs:"go-roadmap-srs"};
+  oldChk:"go-roadmap-chk", skip0:"go-roadmap-skip0", hideDone:"go-roadmap-hd", srs:"go-roadmap-srs",
+  doneAt:"go-roadmap-done-at", backup:"go-roadmap-backup", snooze:"go-roadmap-backup-snooze", exam:"go-roadmap-exam", news:"go-roadmap-news"};
 const ls = {
   get(k, def){ try{ const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v) }catch(e){ return def } },
   raw(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
@@ -12,10 +13,14 @@ let S = ls.get(K.st, {}), DY = ls.get(K.days, []), NT = ls.get(K.notes, {}), QZ 
 let PW = parseInt(ls.raw(K.pace) || "8", 10); if(!(PW > 0)) PW = 8;
 let SKIP0 = ls.raw(K.skip0) === "1";
 let SRS = ls.get(K.srs, {}); if(!SRS || typeof SRS !== "object") SRS = {};
+// DA — когда тема отмечена готовой (для фактического темпа), EX — лучший результат экзамена этапа
+let DA = ls.get(K.doneAt, {}); if(!DA || typeof DA !== "object") DA = {};
+let EX = ls.get(K.exam, {}); if(!EX || typeof EX !== "object") EX = {};
 if(!S || typeof S !== "object") S = {}; if(!Array.isArray(DY)) DY = []; if(!NT || typeof NT !== "object") NT = {};
 const save = {
   st(){ ls.set(K.st, S) }, days(){ ls.set(K.days, DY) }, notes(){ ls.set(K.notes, NT) }, quiz(){ ls.set(K.quiz, QZ) },
-  ck(){ ls.set(K.ck, CK) }, open(){ ls.set(K.open, OPEN) }, pace(){ ls.set(K.pace, String(PW)) }, srs(){ ls.set(K.srs, SRS) }
+  ck(){ ls.set(K.ck, CK) }, open(){ ls.set(K.open, OPEN) }, pace(){ ls.set(K.pace, String(PW)) }, srs(){ ls.set(K.srs, SRS) },
+  doneAt(){ ls.set(K.doneAt, DA) }, exam(){ ls.set(K.exam, EX) }
 };
 
 // Перенос прогресса со старой карты: "узел:индекс" → "узел.подтема"
@@ -38,6 +43,7 @@ function migrate(){
       CK[n + suf] = [...new Set([...(CK[n + suf] || []), ...CK[o + suf]])].sort((a, b) => a - b); delete CK[o + suf]; changed = true;
     }
     for(const q of Object.keys(SRS)) if(q.startsWith(o + "#")){ SRS[n + q.slice(o.length)] = SRS[q]; delete SRS[q]; changed = true }
+    if(DA[o] !== undefined){ if(!DA[n]) DA[n] = DA[o]; delete DA[o]; changed = true }
   }
   for(const k of Object.keys(NT)){
     if(!k.includes(":")) continue;
@@ -55,7 +61,7 @@ function migrate(){
       if(!arr.includes(i)){ arr.push(i); arr.sort((a, b) => a - b); CK[key] = arr; changed = true }
     }
   }
-  if(changed){ save.st(); save.notes(); save.ck(); save.quiz(); save.srs() }
+  if(changed){ save.st(); save.notes(); save.ck(); save.quiz(); save.srs(); save.doneAt() }
 }
 migrate();
 
@@ -142,10 +148,20 @@ function stats(){
   return r;
 }
 const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
-function forecast(h){
-  if(!(PW > 0) || !(h > 0)) return null;
-  const w = Math.ceil(h / PW), d = new Date(); d.setDate(d.getDate() + w * 7);
+function forecast(h, pace = PW){
+  if(!(pace > 0) || !(h > 0)) return null;
+  const w = Math.ceil(h / pace), d = new Date(); d.setDate(d.getDate() + w * 7);
   return {w, date:d.toLocaleDateString("ru-RU", {day:"numeric", month:"long", year:"numeric"})};
+}
+const daysSince = d => Math.round((new Date(today()) - new Date(d)) / 864e5);
+// фактический темп: часы тем, отмеченных готовыми за последние 4 недели, в пересчёте на неделю.
+// Пока с первой готовой темы не прошла неделя, данных мало — возвращает null.
+function realPace(){
+  const dates = Object.keys(DA).filter(k => BYKEY[k]).map(k => DA[k]).sort(); if(!dates.length) return null;
+  const span = Math.min(28, daysSince(dates[0]) + 1);
+  if(span < 7) return null;
+  let h = 0; for(const k in DA) if(BYKEY[k] && daysSince(DA[k]) < 28) h += BYKEY[k].sb.h;
+  return h > 0 ? h / (span / 7) : null;
 }
 function streak(){
   const set = new Set(DY); let s = 0; const d = new Date();
@@ -186,7 +202,7 @@ function subHTML(r){
   if(NT[k]) meta += "<span>" + I("edit") + "заметка</span>";
   return '<div class="sub st-' + v + '" id="s-' + k + '" data-k="' + k + '"><div class="sub-h">' +
     '<button class="stt" data-act="cycle" title="' + TXT[v] + ' — нажми, чтобы сменить" aria-label="Статус: ' + TXT[v] + '"></button>' +
-    '<div class="sub-main" data-act="toggle"><div class="sub-t">' + esc(sb.w) + '</div><div class="sub-m">' + meta + "</div></div>" +
+    '<div class="sub-main" data-act="toggle" role="button" tabindex="0" aria-expanded="false"><div class="sub-t">' + esc(sb.w) + '</div><div class="sub-m">' + meta + "</div></div>" +
     '<button class="chev" data-act="toggle" aria-label="Подробнее">' + I("chev") + '</button></div><div class="sub-b" hidden></div></div>';
 }
 const enTag = x => x === "en" ? '<span class="en">EN</span>' : "";
@@ -242,8 +258,18 @@ function subBody(r){
   h += '<ol class="steps">' + out + "</ol>";
   h += '<div class="all-done"' + (steps(r).every(x => x.done) && v !== "done" ? "" : " hidden") + ">" + I("check") + 'Все шаги пройдены. Отметить тему готовой?<button class="btn sm" data-act="set" data-v="done">Да, готово</button></div>';
   const nv = NT[k] || "";
-  h += '<button class="note-btn' + (nv ? " has" : "") + '" data-act="note">' + I("edit") + (nv ? "Заметка" : "Добавить заметку") + '</button><textarea class="note" placeholder="Свои заметки, ссылки, выводы…"' + (nv ? "" : " hidden") + ">" + esc(nv) + "</textarea>";
+  h += '<div class="sub-f"><button class="note-btn' + (nv ? " has" : "") + '" data-act="note">' + I("edit") + (nv ? "Заметка" : "Добавить заметку") + "</button>" +
+    '<button class="note-btn" data-act="link">' + I("link") + "Ссылка на тему</button>" +
+    '<a class="note-btn" target="_blank" rel="noopener" href="' + esc(issueURL(r)) + '">' + I("flag") + "Сообщить об ошибке</a></div>" +
+    '<textarea class="note" placeholder="Свои заметки, ссылки, выводы…"' + (nv ? "" : " hidden") + ">" + esc(nv) + "</textarea>";
   return h;
+}
+const REPO = "https://github.com/UbicaSmerti228/go-roadmap";
+const topicURL = k => location.origin + location.pathname + "#" + k;
+// готовый issue на GitHub: тема и ссылка уже подставлены
+function issueURL(r){
+  return REPO + "/issues/new?title=" + encodeURIComponent("Ошибка в теме «" + r.sb.w + "»") +
+    "&body=" + encodeURIComponent("Тема: " + r.k + "\nСсылка: " + topicURL(r.k) + "\n\nЧто не так:\n");
 }
 function quizHTML(r){
   const {k, sb} = r;
@@ -269,10 +295,11 @@ function afterProgress(k){
   if(st(k) === "todo") setStatus(k, "learning");
   updateSteps(k); refreshMeta(k); updateStats();
 }
-const NDT = {}; D.forEach(sg => sg.n.forEach(nd => NDT[nd.id] = nd.t));
+const NDT = {}, NREQ = {}; D.forEach(sg => sg.n.forEach(nd => { NDT[nd.id] = nd.t; if(nd.req) NREQ[nd.id] = nd.req }));
 // milestone этапа: критерии (CK["miN"]) и шаг сквозного проекта (CK["miN#p"], ссылка на репозиторий — NT["miN"])
 function mileHTML(mi, si){
   let h = '<div class="mile" data-mi="' + si + '"><h3>' + I("flag") + esc(mi.t) + '<span class="mile-cnt" data-mc="c"></span></h3><div class="ck mile-ck">' + ckList(mi.c, CK["mi" + si] || [], "mi") + "</div>";
+  if(examQids(si).length) h += '<div class="exam"><button class="btn sm" data-act="exam" data-si="' + si + '">' + I("quiz") + 'Экзамен этапа</button><span class="mut" data-ex="' + si + '"></span></div>';
   if(mi.p){
     const link = NT["mi" + si] || "";
     h += '<div class="proj"><div class="proj-h">' + I("box") + "<b>" + esc(mi.p[0]) + '</b><span class="mile-cnt" data-mc="p"></span></div><p>' + esc(mi.p[1]) + '</p><div class="ck">' + ckList(mi.pc, CK["mi" + si + "#p"] || [], "mip") + "</div>" +
@@ -293,6 +320,8 @@ function updateMile(si){
   el.classList.toggle("m-done", m.c === m.cn && m.p === m.pn);
   const a = $(".proj-open", el), link = NT["mi" + si] || "";
   if(a){ const ok = /^https?:\/\//.test(link); a.hidden = !ok; if(ok) a.href = link }
+  const ex = $('[data-ex="' + si + '"]', el), best = EX[si];
+  if(ex) ex.textContent = best ? "лучший результат: " + best.s + " из " + best.n : "10 случайных вопросов по темам этапа";
 }
 function renderApp(){
   let h = "";
@@ -302,8 +331,8 @@ function renderApp(){
     if(si === 0) h += '<button class="btn sm skip-btn" data-act="skip0">' + (skip ? "Вернуть этап 0 в карту" : "У меня есть опыт — пропустить этап") + "</button>";
     h += '</div></div><div class="nodes">';
     sg.n.forEach(nd => {
-      h += '<div class="node' + (OPEN["n-" + nd.id] ? " op" : "") + '" id="n-' + nd.id + '" data-nid="' + nd.id + '"><div class="node-h" data-act="node"><div class="node-main"><span class="tag ' + nd.m + '">' + (nd.m === "seq" ? "по порядку" : "можно параллельно") + '</span><div class="node-t">' + esc(nd.t) + '</div><div class="node-d">' + esc(nd.ds) + "</div>" +
-        (nd.req ? '<div class="req">Нужны до: ' + nd.req.map(x => esc(NDT[x] || x)).join(" · ") + "</div>" : "") +
+      h += '<div class="node' + (OPEN["n-" + nd.id] ? " op" : "") + '" id="n-' + nd.id + '" data-nid="' + nd.id + '"><div class="node-h" data-act="node" role="button" tabindex="0"><div class="node-main"><span class="tag ' + nd.m + '">' + (nd.m === "seq" ? "по порядку" : "можно параллельно") + '</span><div class="node-t">' + esc(nd.t) + '</div><div class="node-d">' + esc(nd.ds) + "</div>" +
+        (nd.req ? '<div class="req" data-req="' + nd.id + '"></div>' : "") +
         '</div><span class="pill" data-npill="' + nd.id + '"></span><button class="chev" aria-label="Развернуть">' + I("chev") + '</button></div><div class="node-b">';
       nd.sub.forEach(sb => { h += subHTML(BYKEY[nd.id + "." + sb.id]) });
       h += "</div></div>";
@@ -379,6 +408,18 @@ function updateStats(){
     if(s.dn < s.tot){ const ff = forecast(s.hrs); mi = esc(D[si].mi.t) + ": осталось " + (s.tot - s.dn) + " " + plural(s.tot - s.dn, "подтема", "подтемы", "подтем") + " (~" + s.hrs + " ч)" + (ff ? " → <b>" + ff.date + "</b>" : ""); break }
   }
   $("#fcMile").innerHTML = mi;
+  const rp = realPace(), rf = rp ? forecast(r.hrsLeft, rp) : null;
+  $("#fcReal").innerHTML = rf ? "По факту за 4 недели ты проходишь <b>~" + (Math.round(rp * 10) / 10) + " ч в неделю</b> → финиш " + rf.date
+    : Object.keys(DA).length && r.hrsLeft > 0 ? "Фактический темп появится через неделю после первой готовой темы." : "";
+  // нужные узлы: пока они не пройдены, узел помечен как «рано»
+  for(const id in NREQ){
+    const el = $('[data-req="' + id + '"]'); if(!el) continue;
+    const miss = NREQ[id].filter(x => r.nodes[x] && r.nodes[x].dn < r.nodes[x].tot), n = r.nodes[id];
+    el.textContent = miss.length ? "Сначала пройди: " + miss.map(x => NDT[x] || x).join(" · ") : "Нужные узлы пройдены: " + NREQ[id].map(x => NDT[x] || x).join(" · ");
+    el.classList.toggle("ok", !miss.length);
+    el.closest(".node").classList.toggle("early", miss.length > 0 && n.dn < n.tot);
+  }
+  updateBackupHint();
   const due = srsDue(), queued = Object.keys(SRS).filter(qById);
   const next = queued.map(q => SRS[q].due).sort()[0];
   $("#revBody").innerHTML = due.length
@@ -396,10 +437,22 @@ function updateStats(){
   if(window.gRefresh) window.gRefresh();
 }
 
+// напоминание о копии: прогресс живёт только в этом браузере
+function updateBackupHint(){
+  const el = $("#backupHint"); if(!el) return;
+  const last = ls.raw(K.backup), snooze = ls.raw(K.snooze) || "", has = Object.keys(S).length + Object.keys(QZ).length > 0;
+  const due = has && today() >= snooze && (last ? daysSince(last) >= 14 : DY.length >= 3);
+  el.hidden = !due;
+  if(due){ const n = last ? daysSince(last) : 0; $("#bkText").textContent = last ? "Последняя копия сделана " + n + " " + plural(n, "день", "дня", "дней") + " назад." : "У прогресса ещё нет копии." }
+  const info = $("#bkInfo");
+  if(info) info.textContent = last ? "Последняя копия: " + new Date(last).toLocaleDateString("ru-RU", {day:"numeric", month:"long", year:"numeric"}) : "Копий прогресса ещё не было";
+}
+
 // ---------- действия ----------
 function setStatus(k, v){
   if(v === "todo") delete S[k]; else S[k] = v;
-  if(v === "done") markDay();
+  if(v === "done"){ markDay(); if(!DA[k]) DA[k] = today() } else delete DA[k];
+  save.doneAt();
   save.st();
   const el = document.getElementById("s-" + k);
   if(el){
@@ -419,6 +472,20 @@ function openSub(el, force){
   const k = el.dataset.k, body = $(".sub-b", el), on = force === undefined ? body.hidden : force;
   if(on && !body.dataset.ready){ body.innerHTML = subBody(BYKEY[k]); body.dataset.ready = "1" }
   body.hidden = !on; el.classList.toggle("op", on);
+  $(".sub-main", el).setAttribute("aria-expanded", on);
+  // адрес страницы ведёт на открытую тему: ссылкой можно поделиться
+  if(on) setHash(k); else if(hashKey() === k) setHash("");
+}
+const hashKey = () => { try{ return decodeURIComponent(location.hash.slice(1)) }catch(e){ return "" } };
+function setHash(k){ try{ history.replaceState(null, "", k ? "#" + k : location.pathname + location.search) }catch(e){} }
+function openFromHash(){ const k = hashKey(); if(BYKEY[k]) goto(k) }
+function copyLink(btn, k){
+  if(btn.dataset.busy) return;
+  const url = topicURL(k), old = btn.innerHTML;
+  const done = () => { btn.dataset.busy = "1"; btn.innerHTML = I("check") + "Ссылка скопирована"; setTimeout(() => { btn.innerHTML = old; delete btn.dataset.busy }, 1500) };
+  setHash(k);
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => prompt("Ссылка на тему:", url));
+  else prompt("Ссылка на тему:", url);
 }
 function goto(k){
   const r = BYKEY[k]; if(!r) return;
@@ -466,6 +533,8 @@ document.addEventListener("click", e => {
   if(act === "node"){ if(e.target.closest("a")) return; const n = a.closest(".node"); n.classList.toggle("op"); if(n.classList.contains("op")) OPEN[n.id] = 1; else delete OPEN[n.id]; save.open(); return }
   if(act === "toggle"){ openSub(el); return }
   if(act === "review"){ openReview(); return }
+  if(act === "exam"){ openExam(+a.dataset.si); return }
+  if(act === "link"){ copyLink(a, k); return }
   if(act === "daily"){ CK.daily = [...(CK.daily || []), a.dataset.u]; save.ck(); markDay(); updateStats(); return }
   if(act === "skip0"){ SKIP0 = !SKIP0; ls.set(K.skip0, SKIP0 ? "1" : "0"); renderApp(); applyFilter(); return }
   if(act === "cycle"){ const c = st(k); setStatus(k, c === "todo" ? "learning" : c === "learning" ? "done" : "todo"); return }
@@ -546,11 +615,38 @@ function openReview(){
   const due = srsDue(); if(!due.length) return;
   const rnd = rng(today() + due.length);
   RV = {list:due.map(q => [rnd(), q]).sort((a, b) => a[0] - b[0]).map(x => x[1]), i:0, ok:0};
-  $("#review").hidden = false; document.body.classList.add("modal-open"); showCard();
+  openModal("Повторение ошибок");
+}
+function openModal(title){
+  $("#rvTitle").textContent = title; $("#review").hidden = false; document.body.classList.add("modal-open"); showCard();
+  const b = $("#review .icon-btn"); if(b) b.focus();
+}
+// экзамен этапа: 10 случайных вопросов из всех тем этапа, ошибки уходят в повторение
+function examQids(si){
+  const out = [];
+  D[si].n.forEach(nd => nd.sub.forEach(sb => (sb.q || []).forEach((_, i) => out.push(nd.id + "." + sb.id + "#" + i))));
+  return out;
+}
+function openExam(si){
+  const all = examQids(si); if(!all.length) return;
+  for(let j = all.length - 1; j > 0; j--){ const t = Math.floor(Math.random() * (j + 1)); [all[j], all[t]] = [all[t], all[j]] }
+  RV = {list:all.slice(0, 10), i:0, ok:0, exam:si, miss:new Set()};
+  openModal("Экзамен этапа " + si + " · " + D[si].s);
 }
 function closeReview(){ if(!RV) return; RV = null; $("#review").hidden = true; document.body.classList.remove("modal-open"); updateStats() }
 function showCard(){
   const box = $("#rvBody");
+  if(RV.i >= RV.list.length && RV.exam !== undefined){
+    const n = RV.list.length, best = EX[RV.exam];
+    if(!best || best.n !== n || RV.ok > best.s){ EX[RV.exam] = {s:RV.ok, n, d:today()}; save.exam() }
+    const miss = [...RV.miss].map(k => BYKEY[k]).filter(Boolean);
+    box.innerHTML = '<div class="rv-sum"><div class="big">' + RV.ok + " <small>из " + n + ' верно</small></div><p class="mut">' +
+      (RV.ok / n >= 0.8 ? "Этап усвоен: верных ответов не меньше 80%." : "Меньше 80%. Повтори темы с ошибками и пройди экзамен ещё раз.") +
+      (miss.length ? " Ошибки добавлены в повторение." : "") + "</p>" +
+      (miss.length ? '<div class="weak-list">' + miss.map(r => '<button class="weak-item" data-rv="topic" data-k="' + r.k + '"><b>' + esc(r.sb.w) + "</b></button>").join("") + "</div>" : "") +
+      '<button class="btn primary" data-rv="close">Готово</button></div>';
+    return;
+  }
   if(RV.i >= RV.list.length){
     box.innerHTML = '<div class="rv-sum"><div class="big">' + RV.ok + ' <small>из ' + RV.list.length + " верно</small></div><p class=mut>Ошибки вернутся завтра, верные ответы — через 3, 7 и 14 дней. После этого вопрос считается выученным.</p><button class=\"btn primary\" data-rv=\"close\">Готово</button></div>";
     return;
@@ -578,7 +674,7 @@ $("#review").addEventListener("click", e => {
     $$("input", box).forEach(i => i.disabled = true);
     $(".q-ex", box).hidden = false;
     res.className = "quiz-res " + (ok ? "ok" : "part"); res.textContent = ok ? "Верно" : "Неверно — вернётся завтра";
-    if(ok) RV.ok++;
+    if(ok) RV.ok++; else if(RV.miss) RV.miss.add(RV.list[RV.i].slice(0, RV.list[RV.i].lastIndexOf("#")));
     srsRecord(RV.list[RV.i], ok); markDay();
     b.textContent = RV.i + 1 < RV.list.length ? "Дальше" : "Итог"; b.dataset.rv = "next";
   }
@@ -600,9 +696,9 @@ function weakList(){
 }
 
 // ---------- поиск и фильтр ----------
-let FILTER = "all", QUERY = "";
+let FILTER = "all";
 function applyFilter(){
-  const q = QUERY.trim().toLowerCase(), active = q || FILTER !== "all";
+  const active = FILTER !== "all";
   let any = false;
   D.forEach((sg, si) => {
     let stageVis = 0;
@@ -610,11 +706,7 @@ function applyFilter(){
       let vis = 0;
       nd.sub.forEach(sb => {
         const k = nd.id + "." + sb.id, el = document.getElementById("s-" + k);
-        let ok = FILTER === "all" || (FILTER === "open" ? st(k) !== "done" : st(k) === FILTER);
-        if(ok && q){
-          const hay = [sb.w, sb.y, sb.t, nd.t, sg.s, ...(sb.kc || []), ...(sb.a || []).map(x => x[0]), ...(sb.v || []).map(x => x[1] + " " + x[2]), ...(sb.d || []).map(x => x[0])].join(" ").toLowerCase();
-          ok = q.split(/\s+/).every(w => hay.includes(w));
-        }
+        const ok = FILTER === "all" || (FILTER === "open" ? st(k) !== "done" : st(k) === FILTER);
         el.hidden = !ok; if(ok) vis++;
       });
       const node = document.getElementById("n-" + nd.id);
@@ -630,7 +722,6 @@ function applyFilter(){
   const nx = $("#next"); if(nx) nx.hidden = active;
   const s0 = $("#stage-0"); if(s0) s0.classList.toggle("force", !!active);
 }
-let qT = null;
 
 $("#chips").addEventListener("click", e => {
   const b = e.target.closest(".chip"); if(!b) return;
@@ -638,6 +729,8 @@ $("#chips").addEventListener("click", e => {
   ls.set(K.hideDone, FILTER === "open" ? "1" : "0");
 });
 document.addEventListener("keydown", e => {
+  // Enter и пробел раскрывают тему и узел так же, как клик
+  if((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches('[role="button"][data-act]')){ e.preventDefault(); e.target.click(); return }
   if(e.key === "/" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); if(!document.body.classList.contains("gmode")) $("#q").focus() }
   if(e.key === "Escape"){ $("#menuPop").hidden = true; closeReview(); if(document.activeElement === $("#q")){ $("#q").value = ""; $("#sres").hidden = true; $("#q").blur() } }
 });
@@ -666,12 +759,16 @@ function expandAll(on){
 }
 $("#mExpand").onclick = $("#tExpand").onclick = () => expandAll(true);
 $("#mCollapse").onclick = $("#tCollapse").onclick = () => expandAll(false);
-$("#mExport").onclick = () => {
-  const data = {v:4, status:S, days:DY, notes:NT, pace:PW, quiz:QZ, checks:CK, srs:SRS};
+function exportProgress(){
+  const data = {v:5, status:S, days:DY, notes:NT, pace:PW, quiz:QZ, checks:CK, srs:SRS, doneAt:DA, exam:EX};
   const b = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"}), a = document.createElement("a");
   a.href = URL.createObjectURL(b); a.download = "go-roadmap-progress-" + today() + ".json"; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000); $("#menuPop").hidden = true;
-};
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  ls.set(K.backup, today()); updateBackupHint();
+}
+$("#mExport").onclick = () => { exportProgress(); $("#menuPop").hidden = true };
+$("#bkExport").onclick = exportProgress;
+$("#bkLater").onclick = () => { ls.set(K.snooze, addDays(7)); updateBackupHint() };
 $("#mImport").onclick = () => { $("#fi").click(); $("#menuPop").hidden = true };
 $("#fi").onchange = e => {
   const f = e.target.files[0]; if(!f) return;
@@ -685,6 +782,8 @@ $("#fi").onchange = e => {
       if(d.quiz && typeof d.quiz === "object") QZ = d.quiz;
       if(d.checks && typeof d.checks === "object") CK = d.checks;
       if(d.srs && typeof d.srs === "object"){ SRS = d.srs; save.srs() }
+      if(d.doneAt && typeof d.doneAt === "object"){ DA = d.doneAt; save.doneAt() }
+      if(d.exam && typeof d.exam === "object"){ EX = d.exam; save.exam() }
       if(parseInt(d.pace, 10) > 0) PW = parseInt(d.pace, 10);
       migrate(); save.st(); save.days(); save.notes(); save.quiz(); save.ck(); save.pace();
       renderApp(); applyFilter();
@@ -695,7 +794,8 @@ $("#fi").onchange = e => {
 $("#mReset").onclick = () => {
   $("#menuPop").hidden = true;
   if(!confirm("Сбросить весь прогресс: статусы, тесты, чек-листы, заметки и активность? Сначала можно скачать копию через меню.")) return;
-  S = {}; DY = []; NT = {}; QZ = {}; CK = {}; SRS = {}; save.st(); save.days(); save.notes(); save.quiz(); save.ck(); save.srs();
+  S = {}; DY = []; NT = {}; QZ = {}; CK = {}; SRS = {}; DA = {}; EX = {};
+  save.st(); save.days(); save.notes(); save.quiz(); save.ck(); save.srs(); save.doneAt(); save.exam();
   renderApp(); applyFilter();
 };
 $("#pw").onchange = e => { PW = parseInt(e.target.value, 10); if(!(PW > 0)) PW = 8; save.pace(); updateStats() };
@@ -712,6 +812,23 @@ renderApp();
 $$(".stage").forEach(s => obs.observe(s));
 if(ls.raw(K.hideDone) === "1"){ FILTER = "open"; $$(".chip", $("#chips")).forEach(x => x.classList.toggle("on", x.dataset.f === "open")); applyFilter() }
 if(!Object.keys(OPEN).length){ const f = $(".node"); if(f){ f.classList.add("op"); OPEN[f.id] = 1 } }
+
+// ---------- что нового ----------
+if(typeof NEWS !== "undefined" && NEWS.length){
+  const latest = NEWS[0][0];
+  // новому посетителю показывать «новое» незачем: для него новая вся карта
+  if(!ls.raw(K.news) && !Object.keys(S).length && !Object.keys(QZ).length) ls.set(K.news, latest);
+  const mark = () => { const fresh = latest > (ls.raw(K.news) || ""); $("#menuBtn").classList.toggle("dot", fresh); $("#mNews").classList.toggle("dot", fresh) };
+  $("#newsBody").innerHTML = NEWS.map(x => '<div class="news-i"><time>' + new Date(x[0]).toLocaleDateString("ru-RU", {day:"numeric", month:"long", year:"numeric"}) + "</time><ul>" + x[1].map(s => "<li>" + rich(s) + "</li>").join("") + "</ul></div>").join("");
+  const close = () => { $("#news").hidden = true; document.body.classList.remove("modal-open") };
+  $("#mNews").onclick = () => { $("#menuPop").hidden = true; $("#news").hidden = false; document.body.classList.add("modal-open"); ls.set(K.news, latest); mark(); $("#news .icon-btn").focus() };
+  $("#news").addEventListener("click", e => { if(e.target.id === "news" || e.target.closest("[data-close]")) close() });
+  document.addEventListener("keydown", e => { if(e.key === "Escape") close() });
+  mark();
+} else $("#mNews").hidden = true;
+
+window.addEventListener("hashchange", openFromHash);
+openFromHash();
 
 window.RM = {D, BYKEY, st, setStatus, goto, openVideo, esc, rich, I, src, QZ:() => QZ, NT:() => NT, saveNote(k, v){ if(v) NT[k] = v; else delete NT[k]; save.notes(); refreshMeta(k) }, pct, stats, TXT};
 if(ls.raw(K.view) === '"g"' || ls.raw(K.view) === "g") setTimeout(() => setView("g"), 0);

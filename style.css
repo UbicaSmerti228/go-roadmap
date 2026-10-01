@@ -439,3 +439,27 @@ button.today-row:hover{border-color:var(--border-strong)}
 .step,.step-b,.quiz,.qs,.q,.q-t,.opts,.opt>span{min-width:0}
 .q-t{overflow-wrap:anywhere}
 @media (max-width:640px){ .vgrid{grid-template-columns:1fr} }
+
+/* ---------- доступность, ссылки на темы, экзамен, напоминание о копии, новости ---------- */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.search input:focus-visible,.note:focus-visible,.proj-link input:focus-visible{outline:0}
+.sub-f{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.sub-f a.note-btn{text-decoration:none}
+.req.ok{color:var(--done)}
+.node.early .req{color:var(--learn);font-weight:600}
+.exam{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px;font-size:13px}
+.exam .btn{display:inline-flex;align-items:center;gap:6px}
+.apply.backup{border-color:var(--border-strong)}
+.apply-act{display:inline-flex;gap:8px;flex-wrap:wrap}
+.menu-note{padding:2px 12px 6px;font-size:12px;color:var(--faint)}
+.icon-btn.dot,#mNews.dot{position:relative}
+.icon-btn.dot::after,#mNews.dot::after{content:"";position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--learn)}
+#mNews.dot::after{top:50%;right:12px;transform:translateY(-50%)}
+.news-i{padding:10px 0;border-top:1px solid var(--border)}
+.news-i:first-child{border-top:0;padding-top:0}
+.news-i time{display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.news-i ul{margin:0;padding-left:18px;font-size:14px}
+.news-i li{margin:4px 0}
+#newsBody{max-height:70vh;overflow:auto}
+.rv-sum .weak-list{margin:10px 0 14px}
+.apply.backup{background:var(--surface);border-color:var(--border-strong)}

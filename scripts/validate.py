@@ -84,6 +84,14 @@ for key, si, node, u in subs(D):
     if not u.get("q") and not u.get("ck"):
         warn(f"{key}: нет теста")
 
+# ---- список «что нового»
+news = C.get("NEWS", [])
+for i, item in enumerate(news):
+    if len(item) != 2 or not re.match(r"^\d{4}-\d{2}-\d{2}$", str(item[0])) or not item[1] or not all(isinstance(x, str) and x for x in item[1]):
+        err(f"NEWS[{i}]: нужен формат [\"ГГГГ-ММ-ДД\", [\"изменение\", …]]")
+if [x[0] for x in news] != sorted((x[0] for x in news), reverse=True):
+    err("NEWS: новые записи должны идти первыми")
+
 # ---- таблицы переноса прогресса
 for old, new in C.get("MIGRATE", {}).items():
     if new not in keys:
