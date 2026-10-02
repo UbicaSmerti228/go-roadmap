@@ -460,6 +460,7 @@ const D = [
     ["Когда мок хуже интеграционного теста?", "Когда проверяешь SQL, миграции и ограничения БД — мок их не выполняет", ["Никогда", "Всегда", "Когда тест быстрый: мок замедляет его, потому что создаётся заново перед каждым кейсом"], "Моки — для логики сервиса, настоящая БД в контейнере — для репозитория."],
     ["Зачем в тестах httptest.NewServer вместо реального внешнего API?", "Тест не зависит от сети и чужого сервиса, а ответы можно подменить под любой сценарий", ["Так код быстрее компилируется: пакет httptest заменяет собой net/http и все его зависимости в сборке", "Реальный API запрещён в тестах законом", "Иначе не работает -race"], "Можно проверить и ошибки: 500, таймауты, битый JSON."]]},
 {id:"bench", w:"Бенчмарки, покрытие, race", y:"Проверить скорость и найти гонки стандартными инструментами.", t:"Бенчмарк склейки строк (+= против strings.Builder) и запуск go test -bench . -benchmem. Прогон go test -race ./...", h:4, s:"v0",
+ p:[["Эталон TaskFlow: бенчмарки горячего пути и разбор результатов", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/docs/perf.md"]],
  ac:["В выводе видны ns/op, B/op и allocs/op для обоих вариантов", "strings.Builder делает меньше аллокаций, и ты объясняешь почему", "`go test -race ./...` проходит"],
  kc:["func BenchmarkX → цикл по b.N или b.Loop() → -benchmem: ns/op, B/op, allocs/op → go test -cover → go test -race"],
  a:[["The cover story", "https://go.dev/blog/cover", "en"], ["Benchmark — тесты в Go", "https://habr.com/ru/articles/875476/"], ["Бенчмарки в Go", "https://habr.com/ru/articles/268585/"]],
@@ -685,6 +686,7 @@ const D = [
     ["Что делает `runtime.Gosched()`?", "Уступает процессор: текущая горутина встаёт в очередь, выполняются другие", ["Останавливает программу", "Запускает GC", "Создаёт новый поток ОС и переносит в него текущую горутину, чтобы разгрузить ядро"], "С Go 1.14 планировщик вытесняет горутины сам, поэтому Gosched нужен редко."],
     ["Что выведет программа?\n```\nruntime.GOMAXPROCS(1)\ngo fmt.Println(\"горутина\")\ntime.Sleep(10 * time.Millisecond)\nfmt.Println(\"main\")\n```", "`горутина`, затем `main`", ["Только `main`", "`main`, затем `горутина`", "Deadlock"], "Даже на одном P горутина успевает выполниться: Sleep паркует main и освобождает процессор."]]},
 {id:"mem", w:"Память: стек, куча, escape analysis, GC", y:"Понимать, откуда аллокации и паузы GC.", t:"go build -gcflags=\"-m\" на своём коде: найди, что «убегает» в кучу и почему. Прочитай про GOGC и GOMEMLIMIT.", h:3, s:"a0",
+ p:[["Эталон TaskFlow: escape analysis на живом примере: ключ кэша до и после", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/docs/perf.md"]],
  ac:["В выводе `-gcflags=-m` найдена строка `moved to heap` или `escapes to heap`", "Для одной такой переменной объяснена причина", "Объясняешь разницу между GOGC и GOMEMLIMIT"],
  kc:["стек быстро/дёшево → куча + GC → escape: вернул указатель → -gcflags=-m → GOGC"],
  a:[["Языковая механика escape analysis", "https://habr.com/ru/articles/497994/"], ["Оптимизация памяти и управление GC в Go: GOGC и GOMEMLIMIT", "https://habr.com/ru/articles/742402/"]],
@@ -1316,6 +1318,7 @@ const D = [
 
 {id:"design", t:"Принципы и паттерны", m:"par", req:["svc"], ds:"SOLID, композиция, типовые паттерны и отказоустойчивость.", sub:[
 {id:"solid", w:"SOLID в Go", y:"Простые модули, маленькие интерфейсы и внедрение зависимостей.", t:"Найди в своём API нарушения SRP и DIP и исправь их: выдели интерфейс UserRepo и внедри мок в тест сервиса.", h:5, s:"a1",
+ p:[["Эталон TaskFlow: интерфейсы у потребителя, зависимости собирает main", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/cmd/taskflow/main.go"]],
  ac:["Сервис получает репозиторий через конструктор", "Тест сервиса работает с моком, без базы", "Записано, какое нарушение было и что изменено"],
  kc:["SRP одна причина менять → OCP расширяем без правок → DIP зависим от абстракции → DI через конструктор"],
  a:[["SOLID в Go и щепотка паттернов", "https://habr.com/ru/articles/816885/"], ["Принцип SOLID в языке Go (перевод SOLID Go Design, Dave Cheney)", "https://habr.com/ru/articles/348852/"]],
@@ -1327,6 +1330,7 @@ const D = [
     ["Функция принимает `*os.File`, хотя только читает из него. Как лучше?", "Принимать io.Reader — функцию можно вызвать с файлом, сетью или строкой в тесте", ["Оставить *os.File", "Принимать any", "Принимать путь к файлу строкой и открывать файл внутри функции: так вызывающему коду проще"], "Принцип: принимай интерфейсы, возвращай конкретные типы."],
     ["Что нарушает сервис, который сам создаёт подключение к базе внутри конструктора?", "Dependency Inversion: зависимость создаётся внутри, а не передаётся снаружи", ["Single Responsibility", "Ничего", "Open/Closed"], "Такой сервис не протестировать без настоящей базы."]]},
 {id:"comp", w:"Композиция вместо наследования", y:"Идиома Go вместо иерархий классов.", t:"Перепиши «иерархию» Animal → Dog → Puppy на встраивание структур и интерфейсы.", h:3, s:"a0",
+ p:[["Эталон TaskFlow: встраивание вместо наследования: обёртка обработчика логов", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/internal/logging/logging.go"]],
  ac:["Поведение собрано встраиванием, полей вида `parent` нет", "Dog и Puppy передаются в функцию, принимающую интерфейс", "Puppy переопределяет один метод и не дублирует остальные"],
  kc:["иерархия Animal→Dog → встраивание Dog has Logger → интерфейсы маленькие"],
  a:[["Практичный Go: советы по написанию поддерживаемых программ", "https://habr.com/ru/articles/441842/"], ["Погружение в интерфейсы Go", "https://habr.com/ru/articles/856272/"]],
@@ -1344,7 +1348,7 @@ const D = [
  a:[["Функциональные опции в Go", "https://habr.com/ru/articles/842594/"], ["Паттерны проектирования на Go (Refactoring.Guru)", "https://refactoring.guru/ru/design-patterns/go"]],
  v:[["K48eA96s0q8", "Паттерны: репозиторий и сервисный слой", "Y_LAB University", "7:22"], ["AeynEfQ8rHg", "Паттерн «Стратегия» в Golang", "The Art of Development", "6:46"]],
  d:[["Functional options for friendly APIs", "https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis", "en"], ["Декоратор (Refactoring.Guru)", "https://refactoring.guru/ru/design-patterns/decorator"]],
- p:[["Refactoring.Guru: Стратегия на Go", "https://refactoring.guru/ru/design-patterns/strategy/go/example"]],
+ p:[["Refactoring.Guru: Стратегия на Go", "https://refactoring.guru/ru/design-patterns/strategy/go/example"], ["Эталон TaskFlow: функциональные опции", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/internal/server/server.go"], ["Эталон TaskFlow: декоратор хранилища", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/internal/instrument/tasks.go"]],
  sc:["Пишешь функциональные опции", "Оборачиваешь репозиторий декоратором с логами или метриками"],
  q:[["Какую проблему решают функциональные опции?", "Гибкий конструктор с необязательными параметрами без огромной структуры конфига", ["Параллелизм", "Сериализацию", "Миграции"], "NewServer(WithPort(8080), WithTimeout(5*time.Second))."],
     ["Декоратор — это:", "Обёртка с тем же интерфейсом, добавляющая поведение (логи, метрики, кэш)", ["Наследник класса", "Фабрика", "Синглтон"], "Middleware — частный случай декоратора."],
@@ -1352,6 +1356,7 @@ const D = [
     ["Чем паттерн Strategy выражается в Go?", "Интерфейсом (или функцией), реализацию которого подставляют снаружи", ["Наследованием классов", "Глобальным switch", "Генерацией кода"], "Например, интерфейс Notifier с реализациями Email и Telegram."],
     ["Что выведет программа?\n```\ntype Server struct{ port, timeout int }\n\ntype Option func(*Server)\n\nfunc WithPort(p int) Option { return func(s *Server) { s.port = p } }\n\nfunc New(opts ...Option) *Server {\n\ts := &Server{port: 8080, timeout: 5}\n\tfor _, o := range opts {\n\t\to(s)\n\t}\n\treturn s\n}\n\nfunc main() {\n\ts := New(WithPort(9000))\n\tfmt.Println(s.port, s.timeout)\n}\n```", "`9000 5`", ["`8080 5`", "`9000 0`", "`0 0`"], "Функциональные опции: дефолты в конструкторе, опции меняют только то, что передали."]]},
 {id:"resil", w:"Устойчивость: timeout, retry, circuit breaker", y:"Внешние сервисы падают — твой сервис не должен падать вместе с ними.", t:"HTTP-клиент к внешнему API с таймаутом, ретраями с экспоненциальной задержкой и джиттером и circuit breaker (sony/gobreaker).", h:4, s:"a0",
+ p:[["Эталон TaskFlow: повторы с растущей случайной паузой", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/internal/resilience/retry.go"], ["Эталон TaskFlow: circuit breaker", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/internal/resilience/breaker.go"], ["Эталон TaskFlow: клиент внешнего API: таймаут, повторы, breaker", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v0.5/internal/webhook/client.go"]],
  ac:["Зависший внешний сервис даёт ошибку по таймауту, а не вечное ожидание", "Паузы между повторами растут и различаются от запуска к запуску", "После серии ошибок breaker отвечает сразу, не вызывая внешний сервис", "POST без ключа идемпотентности не повторяется"],
  kc:["внешний сервис тормозит → таймаут на каждый вызов → ретрай только идемпотентных, с экспонентой и джиттером → circuit breaker: closed → open → half-open → деградация вместо падения"],
  a:[["Паттерн Circuit Breaker", "https://habr.com/ru/articles/778574/"], ["CircuitBreaker (Martin Fowler)", "https://martinfowler.com/bliki/CircuitBreaker.html", "en"]],
@@ -1364,7 +1369,7 @@ const D = [
     ["Сколько ретраев ставить при вызове внешнего API?", "Немного (2–3) с общим дедлайном: ретраи умножают нагрузку на уже больной сервис", ["Бесконечно, пока запрос не пройдёт: рано или поздно внешний сервис поднимется и ответит", "Ровно 100", "Ретраи не нужны никогда"], "Ретраи на каждом уровне цепочки перемножаются: 3 × 3 × 3 = 27 запросов."],
     ["Что делает circuit breaker в состоянии half-open?", "Пропускает несколько пробных запросов: успех — закрывается, ошибка — снова открывается", ["Пропускает всё", "Блокирует всё навсегда", "Удваивает таймауты"], "Так сервис проверяет, восстановилась ли зависимость, не заваливая её."]]}
 ]}
-], mi:{"t": "Milestone 5 — зрелость", "c": ["Код по слоям, зависимости через интерфейсы", "Называешь 3+ паттерна и где они у тебя в коде", "Объясняешь timeout, retry и circuit breaker на примере своего сервиса", "Решено 40+ задач по алгоритмам"], "p": ["TaskFlow v0.5 — рефакторинг и устойчивость", "Чистые интерфейсы, паттерны и защита от падений внешних сервисов."], "pc": ["Интерфейсы объявлены на стороне потребителя", "Функциональные опции для конструктора сервера", "Вызов внешнего API (webhook) с таймаутом, ретраями и circuit breaker", "Бенчмарк горячего пути и проверка escape analysis"]}},
+], mi:{"t": "Milestone 5 — зрелость", "c": ["Код по слоям, зависимости через интерфейсы", "Называешь 3+ паттерна и где они у тебя в коде", "Объясняешь timeout, retry и circuit breaker на примере своего сервиса", "Решено 40+ задач по алгоритмам"], "p": ["TaskFlow v0.5 — рефакторинг и устойчивость", "Чистые интерфейсы, паттерны и защита от падений внешних сервисов."], "pc": ["Интерфейсы объявлены на стороне потребителя", "Функциональные опции для конструктора сервера", "Вызов внешнего API (webhook) с таймаутом, ретраями и circuit breaker", "Бенчмарк горячего пути и проверка escape analysis"], "ref": "https://github.com/UbicaSmerti228/taskflow-reference/tree/v0.5"}},
 
 {s:"Продакшен: gRPC, Kafka, наблюдаемость", d:"Нужен весь фундамент: Go, сети, SQL, Docker. Сквозной проект превращается в систему из двух сервисов.", n:[
 
@@ -1375,7 +1380,7 @@ const D = [
  a:[["Protocol Buffer Basics: Go", "https://protobuf.dev/getting-started/gotutorial/", "en"], ["Language Guide (proto 3)", "https://protobuf.dev/programming-guides/proto3/", "en"], ["Сериализация данных в Golang с Protobuf", "https://habr.com/ru/companies/otus/articles/784732/"], ["Go и Protocol Buffers: быстрый старт", "https://habr.com/ru/articles/252455/"]],
  v:[["_EqVG-El5z0", "Что такое gRPC и Protobuf?", "Merion Academy", "8:37"], ["DGBLwNN-YM4", "gRPC для новичков", "QA Tech", "17:24"]],
  d:[["Buf Docs", "https://buf.build/docs/", "en"]],
- p:[["Buf: быстрый старт", "https://buf.build/docs/cli/quickstart/", "en"]],
+ p:[["Buf: быстрый старт", "https://buf.build/docs/cli/quickstart/", "en"], ["Эталон TaskFlow: proto-контракт сервиса", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/proto/taskflow/notifier/v1/notifier.proto"]],
  sc:["Описываешь сообщения и сервис в .proto", "Генерируешь код через buf или protoc", "Меняешь контракт, не ломая клиентов"],
  q:[["Зачем номера полей (= 1, = 2) в .proto?", "Они идентифицируют поле в бинарном формате; менять их у существующих полей нельзя", ["Для сортировки", "Это значения по умолчанию: поле получает такое число, если клиент его не передал в сообщении", "Для валидации"], "Имя поля в бинарник не попадает — только номер."],
     ["Чем protobuf выгоднее JSON?", "Компактный бинарный формат, строгая схема, генерация кода", ["Читается человеком", "Не требует схемы", "Работает только в браузере"], "Цена — нечитаемость без инструментов."],
@@ -1388,7 +1393,7 @@ const D = [
  a:[["Пишем gRPC-сервис на Go — сервис авторизации", "https://habr.com/ru/articles/774796/"]],
  v:[["clqD31_MI_c", "Основы gRPC в Go — микросервисы, как в BigTech", "balun.courses", "1:16:05"], ["Gk-z2ykXfJo", "gRPC в Golang на реальном примере", "BACKEND NINJA", "26:38"]],
  d:[["gRPC Go: Quick start", "https://grpc.io/docs/languages/go/quickstart/", "en"], ["gRPC Go: Basics tutorial", "https://grpc.io/docs/languages/go/basics/", "en"]],
- p:[["grpc-go: пример helloworld", "https://github.com/grpc/grpc-go/tree/master/examples/helloworld", "en"]],
+ p:[["grpc-go: пример helloworld", "https://github.com/grpc/grpc-go/tree/master/examples/helloworld", "en"], ["Эталон TaskFlow: gRPC-сервер: коды ошибок и перехватчики", "https://github.com/UbicaSmerti228/taskflow-reference/tree/v1.0/internal/notifier/grpcserver"], ["Эталон TaskFlow: клиент с deadline на каждый вызов", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/internal/notifierclient/client.go"]],
  sc:["Поднимаешь gRPC-сервер и клиент", "Возвращаешь ошибки через status и codes", "Пишешь interceptor логирования"],
  q:[["Поверх какого протокола работает gRPC?", "HTTP/2", ["HTTP/1.0", "UDP", "WebSocket"], "Мультиплексирование, бинарные фреймы, стриминг."],
     ["Как вернуть «не найдено» из gRPC-метода?", "`status.Error(codes.NotFound, \"…\")`", ["Записать статус HTTP 404 в заголовок ответа", "panic", "nil, nil"], "У gRPC свои коды: NotFound, InvalidArgument, Unavailable…"],
@@ -1400,7 +1405,7 @@ const D = [
  kc:["server-streaming: Send в цикле → клиент Recv до io.EOF → ctx deadline → DeadlineExceeded"],
  a:[["Deadlines (gRPC Guides)", "https://grpc.io/docs/guides/deadlines/", "en"], ["gRPC в качестве протокола межсервисного взаимодействия. Доклад Яндекса", "https://habr.com/ru/companies/yandex/articles/484068/"]],
  v:[["KQIi5yVrZ3I", "Practical gRPC Streams in Go", "Сергей Антоничев, GoFunc", "51:27"], ["l_74x_qQZB8", "Building a gRPC Service in Go: Server Streaming RPC", "Mario Carrion", "14:28", "en"]],
- p:[["grpc-go: пример route_guide (все виды стриминга)", "https://github.com/grpc/grpc-go/tree/master/examples/route_guide", "en"]],
+ p:[["grpc-go: пример route_guide (все виды стриминга)", "https://github.com/grpc/grpc-go/tree/master/examples/route_guide", "en"], ["Эталон TaskFlow: server-streaming с отменой и остановкой сервера", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/internal/notifier/grpcserver/server.go"]],
  sc:["Пишешь server-streaming метод", "Ставишь deadline и проверяешь ctx на сервере"],
  q:[["Какие виды RPC есть в gRPC?", "Unary, server streaming, client streaming, bidirectional streaming", ["Только unary", "GET и POST", "Push и Pull"], "Стриминг помечается словом stream перед типом запроса и/или ответа в .proto; unary — без него."],
     ["Что происходит при истечении deadline?", "Вызов завершается с codes.DeadlineExceeded, контекст на сервере отменяется", ["Ничего", "Сервер падает", "Запрос автоматически повторяется с тем же deadline, пока сервер не успеет ответить"], "Deadline передаётся по цепочке вызовов."],
@@ -1429,7 +1434,7 @@ const D = [
  a:[["Kafka для начинающих: основы", "https://habr.com/ru/articles/957824/"], ["Нужна ли вам Kafka? Разбираемся в технологии", "https://habr.com/ru/articles/757440/"]],
  v:[["UNOkvk_fMmM", "Kafka и RabbitMQ — брокеры сообщений простым языком", "Артём Шумейко", "17:32"], ["hbseyn-CfXY", "Лучший гайд по Kafka для начинающих за 1 час", "Vlad Mishustin", "1:15:01"]],
  d:[["Apache Kafka: Introduction", "https://kafka.apache.org/intro", "en"]],
- p:[["Apache Kafka: Quickstart", "https://kafka.apache.org/quickstart", "en"]],
+ p:[["Apache Kafka: Quickstart", "https://kafka.apache.org/quickstart", "en"], ["Эталон TaskFlow: Kafka в compose в режиме KRaft", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/compose.yaml"]],
  sc:["Объясняешь партиции, offset и consumer group", "Знаешь, почему консьюмеров в группе не имеет смысла делать больше, чем партиций"],
  q:[["Что гарантирует Kafka насчёт порядка?", "Порядок внутри одной партиции", ["Глобальный порядок по топику", "Никакого", "Порядок по времени отправки всех продюсеров"], "Нужен порядок по сущности — используй ключ."],
     ["Два консьюмера одной группы читают топик из 4 партиций. Как делятся партиции?", "Каждая партиция достаётся одному консьюмеру группы (примерно по 2)", ["Оба читают все сообщения", "Читает только первый", "Случайно по сообщениям"], "Консьюмеров больше, чем партиций, — лишние простаивают."],
@@ -1442,7 +1447,7 @@ const D = [
  a:[["Kafka. Лучшие практики: настройки producer и consumer", "https://habr.com/ru/articles/853652/"]],
  v:[["7Hm2RsH8bS8", "Golang: Kafka producer", "Нина Пакшина", "34:38"], ["KSej3yivuPY", "Golang: Kafka consumer", "Нина Пакшина", "39:30"]],
  d:[["segmentio/kafka-go", "https://github.com/segmentio/kafka-go", "en"], ["twmb/franz-go", "https://github.com/twmb/franz-go", "en"]],
- p:[["kafka-go: примеры", "https://github.com/segmentio/kafka-go/tree/main/examples", "en"]],
+ p:[["kafka-go: примеры", "https://github.com/segmentio/kafka-go/tree/main/examples", "en"], ["Эталон TaskFlow: издатель и читатель с подтверждением после обработки (franz-go)", "https://github.com/UbicaSmerti228/taskflow-reference/tree/v1.0/internal/kafka"]],
  sc:["Пишешь producer с ключом сообщения", "Пишешь consumer с коммитом после обработки"],
  q:[["Зачем задавать ключ сообщения?", "Сообщения с одним ключом попадают в одну партицию — сохраняется порядок по сущности", ["Для шифрования", "Для сжатия", "Без ключа брокер не примет сообщение: ключ обязателен для записи в любой топик с репликацией"], "Все события заказа 42 идут по порядку."],
     ["Когда коммитить offset при at-least-once?", "После успешной обработки сообщения", ["До обработки", "Никогда", "Раз в сутки"], "Коммит до обработки = возможная потеря."],
@@ -1450,6 +1455,7 @@ const D = [
     ["Консьюмер коммитит offset до обработки, потом падает. Что будет с сообщением?", "Потеряется — после рестарта чтение начнётся со следующего", ["Обработается дважды", "Kafka вернёт его автоматически", "Ничего страшного"], "Коммит после обработки даёт at-least-once: возможны дубли, но не потери."],
     ["Как распараллелить обработку одного топика?", "Больше партиций и больше консьюмеров в группе", ["Больше топиков с тем же именем", "Одна партиция и много горутин без порядка", "Никак"], "Порядок сохраняется внутри партиции, поэтому ключ сообщения выбирают осознанно."]]},
 {id:"deliv", w:"Гарантии доставки, идемпотентность, outbox", y:"Как не терять и не дублировать события.", t:"Transactional outbox: заказ и событие пишутся в одной транзакции Postgres, воркер публикует события в Kafka. Консьюмер идемпотентен (таблица обработанных id).", h:4, s:"v0",
+ p:[["Эталон TaskFlow: outbox: событие в одной транзакции с задачей", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/internal/postgres/outbox.go"], ["Эталон TaskFlow: relay: перенос событий в Kafka", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/internal/outbox/relay.go"], ["Эталон TaskFlow: идемпотентный обработчик: таблица обработанных id", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/internal/notifier/pgstore/store.go"]],
  ac:["При остановленной Kafka заказ создаётся, а событие ждёт в таблице outbox", "После возврата Kafka событие уходит", "Повторная доставка того же события не создаёт дубль в базе"],
  kc:["at-most-once / at-least-once / exactly-once → дубли неизбежны → идемпотентный консьюмер: таблица обработанных id → outbox: запись и событие в одной транзакции → воркер публикует outbox"],
  a:[["Паттерн Transactional Outbox: от теории до продакшена", "https://habr.com/ru/articles/967974/"], ["Pattern: Transactional outbox", "https://microservices.io/patterns/data/transactional-outbox.html", "en"]],
@@ -1469,7 +1475,7 @@ const D = [
  a:[["Полное руководство по Prometheus: модель данных и типы метрик", "https://habr.com/ru/articles/455290/"], ["Monitoring Distributed Systems: четыре золотых сигнала (Google SRE)", "https://sre.google/sre-book/monitoring-distributed-systems/", "en"]],
  v:[["6pQQw-qEoCo", "Как работать с Prometheus в Go на примере рекламного сервера", "Славный АйТи", "21:46"], ["2JIyHNskK-c", "Мониторинг и логи продакшен-уровня: Grafana + Loki + Prometheus", "Артём Шумейко", "40:14"]],
  d:[["Instrumenting a Go application for Prometheus", "https://prometheus.io/docs/guides/go-application/", "en"]],
- p:[["Prometheus: Getting started", "https://prometheus.io/docs/prometheus/latest/getting_started/", "en"]],
+ p:[["Prometheus: Getting started", "https://prometheus.io/docs/prometheus/latest/getting_started/", "en"], ["Эталон TaskFlow: метрики RED и шаблон маршрута в метке", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/internal/metrics/metrics.go"], ["Эталон TaskFlow: Prometheus и Grafana в compose, дашборд файлом", "https://github.com/UbicaSmerti228/taskflow-reference/tree/v1.0/deploy"]],
  sc:["Отдаёшь /metrics с Counter и Histogram", "Строишь дашборд RED в Grafana"],
  q:[["Какой тип метрики для длительности запросов?", "Histogram", ["Counter", "Gauge", "Label"], "Из гистограммы считают перцентили p95/p99."],
     ["Четыре золотых сигнала SRE:", "Latency, traffic, errors, saturation", ["CPU, RAM, disk, net", "Logs, traces, metrics, alerts", "RPS, SLA, SLO, SLI"], "Минимальный набор для любого сервиса."],
@@ -1490,6 +1496,7 @@ const D = [
     ["Функция вместо полученного ctx создаёт `context.Background()`. Что случится с трейсом?", "Новый спан не привяжется к трейсу запроса", ["Спан создастся, но без времени начала и конца", "Экспортёр перестанет отправлять все спаны сервиса", "Ничего: текущий спан хранится в глобальной переменной"], "Родительский спан живёт в контексте. Оборвал контекст — оборвал трейс и заодно отмену запроса."],
     ["Чем трейс отличается от лога?", "Трейс связывает шаги одного запроса и хранит их длительность; лог — отдельные события", ["Трейс пишется только при ошибках, а лог — при каждом запросе к сервису, поэтому лог подробнее", "Лог хранит длительность шагов, трейс — только текст", "Ничем: трейс — это лог в формате JSON"], "Их связывают через trace_id в логах: из трейса можно перейти к логам запроса и обратно."]]},
 {id:"pprof", w:"Профилирование: pprof", y:"Найти, где тормозит и куда уходит память.", t:"Подключи net/http/pprof, нагрузи сервис (hey или wrk), сними CPU- и heap-профиль и найди горячую функцию во flame graph.", h:3, s:"a0",
+ p:[["Эталон TaskFlow: pprof на отдельном порту, закрытом снаружи", "https://github.com/UbicaSmerti228/taskflow-reference/blob/v1.0/internal/admin/admin.go"]],
  ac:["CPU-профиль снят под нагрузкой", "Во flame graph найдена самая широкая функция твоего кода", "pprof слушает отдельный порт, недоступный снаружи"],
  kc:["import _ \"net/http/pprof\" → нагрузка (hey, k6) → CPU-профиль за 30 с → go tool pprof -http → flame graph → heap и allocs → горячая функция → исправление → повторный замер"],
  a:[["Профилирование и оптимизация веб-приложений на Go", "https://habr.com/ru/articles/324682/"]],
@@ -1519,7 +1526,7 @@ const D = [
     ["Где хранить пароль базы для сервиса в Kubernetes?", "В Secret, который подключается к поду переменной окружения или файлом", ["В ConfigMap, рядом с остальными настройками сервиса, чтобы всё лежало в одном месте", "В образе контейнера, в инструкции ENV", "В манифесте Deployment, открытым текстом"], "Secret по умолчанию только закодирован в base64, а не зашифрован: доступ к нему ограничивают правами."],
     ["Что происходит при обновлении образа в Deployment по умолчанию?", "Поды заменяются постепенно: новые поднимаются, старые гасятся", ["Сначала гасятся все старые поды, затем поднимаются новые, и сервис на это время недоступен", "Обновляется один под, остальные остаются на старой версии", "Ничего, пока поды не перезапустят вручную"], "Это rolling update. Поэтому новая версия должна уметь работать рядом со старой."]]}
 ]}
-], mi:{"t": "Milestone 6 — продакшен", "c": ["gRPC-сервис с proto, стримингом и gateway", "События через Kafka с outbox", "Метрики и профиль своего сервиса"], "p": ["TaskFlow v1.0 — два сервиса", "Появляется сервис уведомлений на gRPC, события идут через Kafka, метрики — в Grafana."], "pc": ["Сервис notifier с gRPC API и proto-контрактом", "TaskFlow публикует TaskCreated в Kafka через outbox", "notifier читает события идемпотентно", "Метрики Prometheus и дашборд Grafana в compose", "pprof доступен только во внутренней сети"]}},
+], mi:{"t": "Milestone 6 — продакшен", "c": ["gRPC-сервис с proto, стримингом и gateway", "События через Kafka с outbox", "Метрики и профиль своего сервиса"], "p": ["TaskFlow v1.0 — два сервиса", "Появляется сервис уведомлений на gRPC, события идут через Kafka, метрики — в Grafana."], "pc": ["Сервис notifier с gRPC API и proto-контрактом", "TaskFlow публикует TaskCreated в Kafka через outbox", "notifier читает события идемпотентно", "Метрики Prometheus и дашборд Grafana в compose", "pprof доступен только во внутренней сети"], "ref": "https://github.com/UbicaSmerti228/taskflow-reference/tree/v1.0"}},
 
 {s:"Финиш: портфолио и собеседование", d:"Проекты доказывают навыки, подготовка превращает их в оффер. Самый частый провал — дойти до финиша и зависнуть: начинай откликаться после Milestone 4.", n:[
 
@@ -1656,6 +1663,10 @@ const NEXT = [["Интеграция с LLM", "OpenAI/Anthropic API из Go, str
 
 // Что нового в карте: [дата, [изменения]]. Новые записи — в начало.
 const NEWS = [
+["2026-10-03", [
+  "Эталонный проект TaskFlow доведён до конца: готовы версии v0.5 (паттерны и устойчивость) и v1.0 (gRPC, Kafka, метрики). Ссылка «Сверить с эталоном» есть у сквозного проекта всех шести этапов.",
+  "В темах про паттерны, устойчивость, gRPC, Kafka, метрики и профилирование появились ссылки на файлы эталона."
+]],
 ["2026-10-02", [
   "Десять новых тем: первые программы для тех, кто начинает с нуля, константы и `iota`, пакет `time`, изменение данных в SQL, деплой (сервер, HTTPS, CD), куча и top-K, динамическое программирование, live-coding на конкурентность.",
   "У каждого задания появился блок «Как понять, что сделано» — 2–4 проверяемых признака.",
