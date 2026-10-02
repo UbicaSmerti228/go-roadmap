@@ -305,11 +305,16 @@ test("прогноз показывает фактический темп", asyn
   app.RM.setStatus("zero-basics.prog", "todo");
   eq(app.ls("go-roadmap-done-at")["zero-basics.prog"], undefined, "дата не убрана после отмены");
 
-  // 4 темы по 2–4 часа за две недели: prog 2 + compile 2 + shell 4 + ide 2 = 10 ч за 14 дней → 5 ч в неделю
+  // четыре темы, отмеченные готовыми за последние 14 дней: темп = их часы / 2 недели
   const st = {}, da = {};
-  ["prog", "compile", "shell", "ide"].forEach((id, i) => { st["zero-basics." + id] = "done"; da["zero-basics." + id] = iso(Date.now() - (13 - i * 4) * DAY) });
+  let hours = 0;
+  ["prog", "compile", "shell", "ide"].forEach((id, i) => {
+    st["zero-basics." + id] = "done"; da["zero-basics." + id] = iso(Date.now() - (13 - i * 4) * DAY);
+    hours += app.RM.BYKEY["zero-basics." + id].sb.h;
+  });
   app = await load({storage: {"go-roadmap-v1": st, "go-roadmap-done-at": da}});
-  assert(app.$("#fcReal").textContent.includes("~5 ч в неделю"), app.$("#fcReal").textContent);
+  const pace = Math.round(hours / 2 * 10) / 10;
+  assert(app.$("#fcReal").textContent.includes("~" + pace + " ч в неделю"), "ожидался темп " + pace + ": " + app.$("#fcReal").textContent);
   assert(app.$("#fcReal").textContent.includes("финиш"), app.$("#fcReal").textContent);
 });
 
